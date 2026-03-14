@@ -1,0 +1,125 @@
+<!-- 首页 - AI 对话界面 (年轻化重设计) -->
+<view class="container index-page">
+
+  <!-- 顶部状态栏 -->
+  <view class="top-bar anim-float-in">
+    <view class="streak-badge">
+      <text class="streak-fire">🔥</text>
+      <text class="streak-num">{{streakDays}}</text>
+      <text class="streak-text">天</text>
+    </view>
+    <view class="coin-badge" bindtap="goToProfile">
+      <view class="coin-glow"></view>
+      <text class="coin-icon">✨</text>
+      <text class="coin-amount">{{coins}}</text>
+    </view>
+  </view>
+
+  <!-- AI 问候区 - 大字体有呼吸感 -->
+  <view class="hero-section anim-float-in anim-delay-1">
+    <text class="hero-greeting">{{greeting}}</text>
+    <text class="hero-date">{{weekday}} · {{dateStr}}</text>
+  </view>
+
+  <!-- 情绪签到 -->
+  <view class="mood-checkin anim-float-in anim-delay-2" wx:if="{{!moodCheckedIn}}">
+    <text class="mood-checkin-label">今天心情如何？</text>
+    <view class="mood-checkin-list">
+      <view
+        class="mood-checkin-item {{selectedMood === item.value ? 'selected' : ''}}"
+        wx:for="{{moodList}}"
+        wx:key="value"
+        bindtap="onMoodTap"
+        data-value="{{item.value}}"
+        data-emoji="{{item.emoji}}"
+        data-label="{{item.label}}"
+      >
+        <text class="mood-checkin-emoji">{{item.emoji}}</text>
+        <text class="mood-checkin-text">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已签到状态 -->
+  <view class="mood-done anim-scale-in" wx:if="{{moodCheckedIn}}">
+    <text class="mood-done-emoji">{{selectedMoodEmoji}}</text>
+    <text class="mood-done-text">今日心情：{{selectedMoodLabel}}</text>
+    <text class="mood-done-hint">已为你调整任务推荐</text>
+  </view>
+
+  <!-- AI 对话流 -->
+  <view class="chat-flow">
+    <chat-bubble
+      wx:for="{{messages}}"
+      wx:key="id"
+      type="{{item.type}}"
+      content="{{item.content}}"
+      timestamp="{{item.timestamp}}"
+    />
+  </view>
+
+  <!-- 今日待办任务 -->
+  <view class="today-section" wx:if="{{todayTasks.length > 0}}">
+    <view class="section-header">
+      <text class="section-emoji">📋</text>
+      <text class="section-title">今日任务</text>
+      <view class="tag tag-purple">{{todayTasks.length}}项</view>
+    </view>
+    <task-card
+      wx:for="{{todayTasks}}"
+      wx:key="id"
+      task="{{item}}"
+      bind:complete="onTaskComplete"
+      bind:skip="onTaskSkip"
+    />
+  </view>
+
+  <!-- 已完成归档 -->
+  <view class="done-section" wx:if="{{completedTasks.length > 0}}">
+    <view class="section-header" bindtap="toggleDoneList">
+      <text class="section-emoji">✅</text>
+      <text class="section-title done-title">已完成</text>
+      <view class="tag tag-green">{{completedTasks.length}}项</view>
+    </view>
+    <view class="done-list" wx:if="{{showDoneList}}">
+      <task-card
+        wx:for="{{completedTasks}}"
+        wx:key="id"
+        task="{{item}}"
+        completed="{{true}}"
+      />
+    </view>
+  </view>
+
+  <!-- 快捷操作 - 胶囊按钮组 -->
+  <view class="actions-flow" wx:if="{{showActions}}">
+    <button
+      wx:for="{{actionButtons}}"
+      wx:key="label"
+      class="action-pill {{item.type}}"
+      bindtap="onActionTap"
+      data-action="{{item.action}}"
+    >
+      {{item.emoji}} {{item.label}}
+    </button>
+  </view>
+
+  <!-- 底部输入区 - 毛玻璃浮动 -->
+  <view class="input-float">
+    <view class="input-glass">
+      <input
+        class="msg-input"
+        placeholder="跟我说说今天的想法..."
+        placeholder-class="input-placeholder"
+        value="{{inputValue}}"
+        bindinput="onInput"
+        bindconfirm="onSendMessage"
+        confirm-type="send"
+      />
+      <view class="send-circle {{inputValue ? 'active' : ''}}" bindtap="onSendMessage">
+        <text class="send-arrow">↑</text>
+      </view>
+    </view>
+  </view>
+
+</view>

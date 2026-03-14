@@ -1,0 +1,102 @@
+<!-- 思维转换库页面 -->
+<view class="container mindset-page">
+
+  <!-- 页面标题 -->
+  <view class="page-intro">
+    <text class="intro-title">换个角度看</text>
+    <text class="intro-desc">不是鸡汤，是实用的认知重构</text>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view class="filter-scroll" scroll-x enable-flex>
+    <view
+      wx:for="{{categories}}"
+      wx:key="value"
+      class="filter-tag {{activeCategory === item.value ? 'active' : ''}}"
+      bindtap="onCategoryTap"
+      data-value="{{item.value}}"
+    >
+      {{item.icon}} {{item.label}}
+    </view>
+  </scroll-view>
+
+  <!-- 思维转换卡片列表 -->
+  <view class="shift-list">
+    <view
+      wx:for="{{shifts}}"
+      wx:key="id"
+      class="shift-card card"
+    >
+      <!-- 原始想法 -->
+      <view class="original-thought">
+        <text class="thought-label">😩 当你想：</text>
+        <text class="thought-text">"{{item.original}}"</text>
+      </view>
+
+      <!-- 转换箭头 -->
+      <view class="shift-arrow">↓ 换个角度</view>
+
+      <!-- 转换后的视角 -->
+      <view class="reframed-thought">
+        <text class="reframe-text">"{{item.reframed}}"</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="shift-actions">
+        <view
+          class="shift-action {{item.liked ? 'liked' : ''}}"
+          catchtap="onLike"
+          data-id="{{item.id}}"
+        >
+          <text>{{item.liked ? '❤️' : '🤍'}} {{item.likes}}</text>
+        </view>
+        <view class="shift-action" catchtap="onCollect" data-id="{{item.id}}">
+          <text>{{item.collected ? '⭐' : '☆'}} 收藏</text>
+        </view>
+        <view class="shift-action" catchtap="onShare" data-id="{{item.id}}">
+          <text>📤 分享</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI 生成新的 -->
+  <view class="generate-section">
+    <view class="generate-card card" bindtap="onGenerate">
+      <text class="generate-icon">💡</text>
+      <view class="generate-text">
+        <text class="generate-title">AI 帮你换个角度</text>
+        <text class="generate-desc">说一件你不想做的事，我来帮你转换</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI 生成弹窗 -->
+  <view class="generate-modal" wx:if="{{showGenerateModal}}">
+    <view class="modal-mask" bindtap="closeModal"></view>
+    <view class="modal-content">
+      <view class="modal-title">说说你不想做什么？</view>
+      <textarea
+        class="modal-input"
+        placeholder="比如不想上班、不想学习、不想运动..."
+        value="{{generateInput}}"
+        bindinput="onGenerateInput"
+        auto-focus
+      />
+      <view class="modal-result" wx:if="{{generatedShift}}">
+        <text class="modal-result-text">"{{generatedShift}}"</text>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeModal">关闭</button>
+        <button
+          class="btn-primary"
+          bindtap="onGenerateSubmit"
+          disabled="{{!generateInput}}"
+        >
+          {{generatedShift ? '再换一个' : '帮我转换'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+</view>

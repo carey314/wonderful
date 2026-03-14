@@ -1,0 +1,106 @@
+<!-- 拖延人格测评页 -->
+<view class="container test-page">
+
+  <!-- 封面 - 开始前 -->
+  <view class="cover-section" wx:if="{{step === 'cover'}}">
+    <view class="cover-emoji anim-bounce-in">🧠</view>
+    <text class="cover-title">你是哪种拖延星人？</text>
+    <text class="cover-desc">6 道趣味测试题，AI 帮你精准诊断</text>
+    <view class="cover-tags">
+      <text class="tag tag-purple">2分钟</text>
+      <text class="tag tag-pink">趣味测评</text>
+      <text class="tag tag-blue">AI分析</text>
+    </view>
+    <button class="btn-primary start-btn" bindtap="startTest">开始测评 →</button>
+  </view>
+
+  <!-- 答题中 -->
+  <view class="quiz-section" wx:if="{{step === 'quiz'}}">
+    <!-- 进度条 -->
+    <view class="progress-bar-wrap">
+      <view class="progress-bg">
+        <view class="progress-fill" style="width: {{progressPct}}%"></view>
+      </view>
+      <text class="progress-text">{{currentIndex + 1}} / {{questions.length}}</text>
+    </view>
+
+    <!-- 题目卡片 -->
+    <view class="question-card card anim-scale-in" wx:key="questionAnim" style="animation-name: scale-in;">
+      <text class="question-emoji">{{questions[currentIndex].emoji}}</text>
+      <text class="question-text">{{questions[currentIndex].question}}</text>
+
+      <view class="options-list">
+        <view
+          class="option-item {{selectedOption === idx ? 'selected' : ''}}"
+          wx:for="{{questions[currentIndex].options}}"
+          wx:key="label"
+          wx:for-index="idx"
+          bindtap="selectOption"
+          data-idx="{{idx}}"
+        >
+          <text class="option-letter">{{item.letter}}</text>
+          <text class="option-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 下一题按钮 -->
+    <button
+      class="btn-primary next-btn"
+      bindtap="nextQuestion"
+      disabled="{{selectedOption === -1}}"
+    >
+      {{currentIndex === questions.length - 1 ? 'AI 开始分析' : '下一题'}}
+    </button>
+  </view>
+
+  <!-- AI 分析中 -->
+  <view class="analyzing-section" wx:if="{{step === 'analyzing'}}">
+    <view class="analyzing-emoji anim-bounce-in">🔮</view>
+    <text class="analyzing-text">AI 正在分析你的拖延人格...</text>
+    <view class="analyzing-dots">
+      <view class="dot dot-1"></view>
+      <view class="dot dot-2"></view>
+      <view class="dot dot-3"></view>
+    </view>
+  </view>
+
+  <!-- 结果页 -->
+  <view class="result-section" wx:if="{{step === 'result'}}">
+    <!-- 分享卡片 -->
+    <view class="result-card anim-scale-in">
+      <view class="result-badge">
+        <text class="result-emoji">{{result.emoji}}</text>
+      </view>
+      <text class="result-type">{{result.type}}</text>
+      <text class="result-subtitle">{{result.subtitle}}</text>
+
+      <view class="result-desc-box">
+        <text class="result-desc">{{result.description}}</text>
+      </view>
+
+      <view class="result-traits">
+        <view class="trait-item" wx:for="{{result.traits}}" wx:key="*this">
+          <text class="trait-dot"></text>
+          <text class="trait-text">{{item}}</text>
+        </view>
+      </view>
+
+      <view class="result-tip-box">
+        <text class="tip-label">AI 小建议</text>
+        <text class="tip-text">{{result.tip}}</text>
+      </view>
+
+      <view class="result-watermark">
+        <text>Wonderful · 拖延人格测评</text>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="result-actions">
+      <button class="btn-primary share-btn" open-type="share">分享给朋友</button>
+      <button class="btn-secondary retry-btn" bindtap="retryTest">重新测评</button>
+    </view>
+  </view>
+
+</view>

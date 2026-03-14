@@ -1,0 +1,526 @@
+/* 个人中心 - 年轻化版 */
+
+/* 用户信息卡片 */
+.user-card {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xl) !important;
+}
+
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 36rpx;
+  overflow: hidden;
+  margin-right: var(--spacing-lg);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* 头像光晕 */
+.user-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -6rpx;
+  border-radius: 40rpx;
+  background: linear-gradient(135deg, rgba(124,92,252,0.3), rgba(255,107,157,0.2));
+  z-index: -1;
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.user-avatar image {
+  width: 100%;
+  height: 100%;
+  border-radius: 36rpx;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-primary);
+  font-size: 56rpx;
+  border-radius: 36rpx;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.5rpx;
+}
+
+.user-joined {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+}
+
+/* 金币卡片 - 渐变玻璃 */
+.coin-card {
+  background: var(--gradient-sunset) !important;
+  text-align: center;
+  padding: var(--spacing-xl) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 金币卡片装饰 */
+.coin-card::before {
+  content: '';
+  position: absolute;
+  top: -60rpx;
+  right: -60rpx;
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+
+.coin-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40rpx;
+  left: -40rpx;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.coin-overview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.coin-amount-large {
+  font-size: 72rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.2;
+  text-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.coin-label {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8rpx;
+  font-weight: 500;
+  letter-spacing: 2rpx;
+}
+
+/* 数据统计 - 玻璃卡片 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+}
+
+.stats-value {
+  font-size: 40rpx;
+  font-weight: 800;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stats-label {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+  font-weight: 500;
+}
+
+/* 成就徽章 */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.5rpx;
+}
+
+.section-more {
+  font-size: 24rpx;
+  font-weight: 500;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.badges-row {
+  display: flex;
+  gap: var(--spacing-lg);
+  overflow-x: auto;
+  padding-bottom: 8rpx;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110rpx;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.badge-item:active {
+  transform: scale(0.9);
+}
+
+.badge-item.locked {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+.badge-icon {
+  font-size: 52rpx;
+  margin-bottom: 10rpx;
+}
+
+.badge-name {
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* 设置项列表 - 玻璃卡片 */
+.settings-card {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1rpx solid rgba(124, 92, 252, 0.06);
+  transition: background 0.2s ease;
+}
+
+.setting-item:active {
+  background: rgba(124, 92, 252, 0.04);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-icon {
+  font-size: 36rpx;
+  margin-right: var(--spacing-md);
+}
+
+.setting-label {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.setting-value {
+  font-size: 26rpx;
+  color: var(--color-text-light);
+  margin-right: var(--spacing-sm);
+}
+
+.setting-arrow {
+  font-size: 28rpx;
+  color: var(--color-text-light);
+  font-weight: 300;
+}
+
+/* 底部 slogan - 渐变文字 */
+.footer-slogan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-xl) 0;
+  margin-top: var(--spacing-lg);
+}
+
+.footer-slogan text {
+  font-size: 24rpx;
+  color: var(--color-text-light);
+  line-height: 2;
+}
+
+.footer-slogan text:first-child {
+  font-weight: 600;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ======================== */
+/* 安全气囊卡片            */
+/* ======================== */
+.airbag-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+.airbag-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.airbag-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(6, 214, 160, 0.12), rgba(56, 189, 248, 0.12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.airbag-icon {
+  font-size: 36rpx;
+}
+
+.airbag-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.airbag-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.airbag-desc {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 4rpx;
+}
+
+.airbag-dots {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.airbag-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.airbag-dot.active {
+  background: var(--gradient-cool);
+  box-shadow: 0 0 12rpx rgba(6, 214, 160, 0.4);
+}
+
+.airbag-dot.used {
+  background: rgba(165, 165, 192, 0.2);
+}
+
+/* ======================== */
+/* 功能入口                */
+/* ======================== */
+.feature-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.feature-entry {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+.feature-entry:active {
+  transform: scale(0.98);
+}
+
+.feature-icon {
+  font-size: 40rpx;
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.feature-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.feature-desc {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 4rpx;
+}
+
+/* ======================== */
+/* 弹窗                    */
+/* ======================== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  width: 85%;
+  max-width: 620rpx;
+  padding: var(--spacing-xl) !important;
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-emoji {
+  font-size: 72rpx;
+  margin-bottom: var(--spacing-sm);
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.modal-body {
+  text-align: center;
+}
+
+.modal-desc {
+  display: block;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-status {
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-label {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-dots-large {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+}
+
+.airbag-dot-large {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  transition: all 0.3s ease;
+}
+
+.airbag-dot-large.active {
+  background: linear-gradient(135deg, rgba(6, 214, 160, 0.15), rgba(56, 189, 248, 0.15));
+  box-shadow: 0 0 24rpx rgba(6, 214, 160, 0.2);
+}
+
+.airbag-dot-large.used {
+  background: rgba(165, 165, 192, 0.1);
+  opacity: 0.4;
+  filter: grayscale(100%);
+}
+
+.modal-rules {
+  text-align: left;
+  padding: var(--spacing-md);
+  background: rgba(124, 92, 252, 0.04);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-rule {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  line-height: 2;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.modal-btn {
+  width: 100% !important;
+}
+
+.modal-close {
+  font-size: 26rpx;
+  color: var(--color-text-light);
+  padding: var(--spacing-sm);
+}
+
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.06); opacity: 1; }
+}

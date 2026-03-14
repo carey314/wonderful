@@ -1,0 +1,163 @@
+<!-- Onboarding 引导流程 -->
+<view class="onboarding-page">
+
+  <!-- 步骤 1: 欢迎页 -->
+  <view class="step" wx:if="{{step === 1}}">
+    <view class="welcome-content">
+      <view class="logo-area">
+        <view class="logo-circle">
+          <text class="logo-text">W</text>
+        </view>
+        <text class="app-name">Wonderful</text>
+      </view>
+      <view class="slogan">
+        <text class="slogan-line">不是逼自己变好</text>
+        <text class="slogan-line">而是让自己觉得变好很爽</text>
+      </view>
+      <button class="btn-primary start-btn" bindtap="nextStep">
+        开始认识你
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤 2: 了解用户 -->
+  <view class="step" wx:if="{{step === 2}}">
+    <view class="step-content">
+      <text class="step-question">怎么称呼你？</text>
+      <input
+        class="name-input"
+        placeholder="输入昵称"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+      />
+
+      <text class="step-question mt-lg">你每天大概几点起床？</text>
+      <view class="option-group">
+        <view
+          wx:for="{{wakeOptions}}"
+          wx:key="*this"
+          class="option-item {{wakeTime === item ? 'active' : ''}}"
+          bindtap="onWakeSelect"
+          data-value="{{item}}"
+        >
+          {{item}}
+        </view>
+      </view>
+
+      <text class="step-question mt-lg">每天大概几点睡觉？</text>
+      <view class="option-group">
+        <view
+          wx:for="{{sleepOptions}}"
+          wx:key="*this"
+          class="option-item {{sleepTime === item ? 'active' : ''}}"
+          bindtap="onSleepSelect"
+          data-value="{{item}}"
+        >
+          {{item}}
+        </view>
+      </view>
+
+      <button
+        class="btn-primary next-btn"
+        bindtap="nextStep"
+        disabled="{{!nickname}}"
+      >
+        继续
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤 3: 第一个任务 -->
+  <view class="step" wx:if="{{step === 3}}">
+    <view class="step-content">
+      <text class="step-question">最近有什么一直想做但还没开始的事吗？</text>
+      <input
+        class="task-input"
+        placeholder="比如学 Python"
+        value="{{firstTask}}"
+        bindinput="onFirstTaskInput"
+      />
+
+      <text class="step-question mt-lg">大概需要多久？</text>
+      <view class="option-group">
+        <view
+          wx:for="{{durationOptions}}"
+          wx:key="value"
+          class="option-item {{firstTaskDuration === item.value ? 'active' : ''}}"
+          bindtap="onDurationSelect"
+          data-value="{{item.value}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+
+      <button
+        class="btn-primary next-btn"
+        bindtap="nextStep"
+        disabled="{{!firstTask}}"
+      >
+        继续
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤 4: 第一次思维转换体验 -->
+  <view class="step" wx:if="{{step === 4}}">
+    <view class="step-content mindset-experience">
+      <view class="mindset-card">
+        <text class="mindset-task">{{firstTask}}？好选择。</text>
+        <text class="mindset-transition">换个角度想——</text>
+        <text class="mindset-text">{{mindsetText}}</text>
+        <text class="mindset-ending">这样想，是不是没那么难了？</text>
+      </view>
+
+      <view class="mindset-actions">
+        <button class="btn-primary" bindtap="nextStep">有道理</button>
+        <button class="btn-secondary" bindtap="regenerateMindset">换一个</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤 5: 订阅消息授权 -->
+  <view class="step" wx:if="{{step === 5}}">
+    <view class="step-content subscribe-step">
+      <text class="subscribe-title">要不要我每天早上叫你？</text>
+      <view class="subscribe-desc">
+        <text>我会在你起床后</text>
+        <text>帮你想好今天最值得做的事</text>
+        <text>晚上帮你看看今天干了啥</text>
+      </view>
+
+      <button class="btn-primary subscribe-btn" bindtap="onSubscribe">
+        好啊 每天叫我
+      </button>
+      <button class="skip-btn" bindtap="nextStep">
+        先不用了
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤 6: 完成 -->
+  <view class="step" wx:if="{{step === 6}}">
+    <view class="step-content complete-step">
+      <text class="complete-emoji">🎉</text>
+      <text class="complete-title">好了！从明天开始</text>
+      <text class="complete-title">我每天陪你聊聊</text>
+      <text class="complete-subtitle">恭喜获得 +100 金币 💰</text>
+
+      <button class="btn-primary go-btn" bindtap="onComplete">
+        去看看
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤指示器 -->
+  <view class="step-indicator" wx:if="{{step > 1 && step < 6}}">
+    <view
+      wx:for="{{6}}"
+      wx:key="*this"
+      class="indicator-dot {{step >= index + 1 ? 'active' : ''}}"
+    ></view>
+  </view>
+
+</view>

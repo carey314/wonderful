@@ -1,0 +1,551 @@
+/* 未来信页面 - 年轻化玻璃拟态 */
+.letter-page {
+  padding-bottom: 160rpx;
+}
+
+/* 页面标题 */
+.page-intro {
+  padding: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+.intro-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  letter-spacing: -1rpx;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.intro-desc {
+  display: block;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+}
+
+/* ======================== */
+/* 写信区 */
+/* ======================== */
+.write-section {
+  margin-top: var(--spacing-lg);
+}
+
+.letter-card {
+  padding: var(--spacing-xl) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.letter-card::after {
+  content: '';
+  position: absolute;
+  top: -60rpx;
+  right: -60rpx;
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,92,252,0.05), rgba(255,107,157,0.04));
+  pointer-events: none;
+}
+
+.letter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1rpx solid rgba(124, 92, 252, 0.06);
+}
+
+.letter-date {
+  font-size: 24rpx;
+  color: var(--color-text-light);
+}
+
+.letter-to {
+  font-size: 24rpx;
+  font-weight: 600;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.letter-content {
+  width: 100%;
+  min-height: 300rpx;
+  font-size: 30rpx;
+  color: var(--color-text);
+  line-height: 2;
+  background: transparent;
+  position: relative;
+}
+
+.letter-placeholder {
+  color: var(--color-text-light);
+  font-size: 28rpx;
+}
+
+.letter-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+}
+
+.char-count {
+  font-size: 22rpx;
+  color: var(--color-text-light);
+}
+
+/* 送达时间 */
+.deliver-section {
+  margin-top: var(--spacing-xl);
+}
+
+.deliver-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+
+.deliver-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.deliver-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 28rpx;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 2rpx solid rgba(124, 92, 252, 0.08);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 120rpx;
+}
+
+.deliver-option:active {
+  transform: scale(0.95);
+}
+
+.deliver-option.active {
+  background: rgba(124, 92, 252, 0.1);
+  border-color: rgba(124, 92, 252, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(124, 92, 252, 0.12);
+}
+
+.deliver-emoji {
+  font-size: 36rpx;
+  margin-bottom: 6rpx;
+}
+
+.deliver-text {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.deliver-option.active .deliver-text {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 心情选择 */
+.mood-section {
+  margin-top: var(--spacing-xl);
+}
+
+.mood-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+
+.mood-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.mood-item {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 24rpx;
+  border-radius: var(--radius-2xl);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 2rpx solid rgba(124, 92, 252, 0.08);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mood-item:active {
+  transform: scale(0.93);
+}
+
+.mood-item.active {
+  background: rgba(124, 92, 252, 0.1);
+  border-color: rgba(124, 92, 252, 0.25);
+  box-shadow: 0 4rpx 16rpx rgba(124, 92, 252, 0.12);
+}
+
+.mood-emoji {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.mood-text {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.mood-item.active .mood-text {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 发送按钮 */
+.send-btn {
+  width: 100%;
+  margin-top: var(--spacing-xl);
+  font-size: 32rpx;
+  padding: 28rpx 0;
+}
+
+.send-btn[disabled] {
+  background: rgba(124, 92, 252, 0.12) !important;
+  color: var(--color-text-light) !important;
+  box-shadow: none !important;
+}
+
+/* ======================== */
+/* 信箱 */
+/* ======================== */
+.mailbox-section {
+  margin-top: var(--spacing-lg);
+}
+
+.tab-row {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1rpx solid rgba(124, 92, 252, 0.06);
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: var(--color-text-light);
+  padding-bottom: 12rpx;
+  border-bottom: 4rpx solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-item.active {
+  color: var(--color-text);
+  font-weight: 700;
+  border-bottom-color: var(--color-primary);
+}
+
+.tab-badge {
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 2rpx 14rpx;
+  border-radius: var(--radius-2xl);
+  background: rgba(124, 92, 252, 0.1);
+  color: var(--color-primary);
+}
+
+.tab-badge.delivered {
+  background: rgba(6, 214, 160, 0.1);
+  color: var(--color-accent);
+}
+
+/* 信件项 */
+.letter-item {
+  padding: var(--spacing-lg) !important;
+  margin-bottom: var(--spacing-md);
+}
+
+.letter-item-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.letter-item-emoji {
+  font-size: 40rpx;
+  margin-right: var(--spacing-md);
+}
+
+.letter-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.letter-item-date {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.letter-item-deliver {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 4rpx;
+}
+
+.letter-seal {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: rgba(124, 92, 252, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seal-icon {
+  font-size: 28rpx;
+}
+
+/* 倒计时进度条 */
+.countdown-bar {
+  height: 8rpx;
+  background: rgba(124, 92, 252, 0.08);
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin-top: 8rpx;
+}
+
+.countdown-fill {
+  height: 100%;
+  background: var(--gradient-sunset);
+  border-radius: 4rpx;
+  transition: width 0.5s ease;
+}
+
+.countdown-text {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* 已送达样式 */
+.delivered-item {
+  border-left: 6rpx solid;
+  border-image: var(--gradient-cool) 1;
+}
+
+.letter-preview {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.letter-open-badge {
+  font-size: 20rpx;
+  color: var(--color-text-light);
+}
+
+.new-badge {
+  font-weight: 700;
+  color: var(--color-secondary);
+  background: rgba(255, 107, 157, 0.1);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-2xl);
+}
+
+/* 空状态 */
+.empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0;
+}
+
+.empty-emoji {
+  font-size: 72rpx;
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.empty-sub {
+  font-size: 24rpx;
+  color: var(--color-text-light);
+  margin-top: 8rpx;
+}
+
+/* ======================== */
+/* 阅读弹窗 */
+/* ======================== */
+.read-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.read-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 27, 75, 0.4);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+}
+
+.read-content {
+  position: relative;
+  width: 100%;
+  max-height: 80vh;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+  animation: slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  overflow-y: auto;
+}
+
+.read-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.read-mood {
+  font-size: 48rpx;
+}
+
+.read-date {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.read-body {
+  background: linear-gradient(135deg, rgba(124,92,252,0.04), rgba(255,107,157,0.04));
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-left: 6rpx solid;
+  border-image: var(--gradient-sunset) 1;
+}
+
+.read-text {
+  font-size: 30rpx;
+  color: var(--color-text);
+  line-height: 2;
+}
+
+.read-comparison {
+  background: rgba(6, 214, 160, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-left: 6rpx solid var(--color-accent);
+}
+
+.comparison-label {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-sm);
+}
+
+.comparison-text {
+  font-size: 28rpx;
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
+.close-btn {
+  width: 100%;
+  font-size: 30rpx;
+  padding: 24rpx 0;
+}
+
+/* ======================== */
+/* 底部模式切换 */
+/* ======================== */
+.mode-switch {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(40rpx);
+  -webkit-backdrop-filter: blur(40rpx);
+  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 0;
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  color: var(--color-primary);
+}
+
+.mode-icon {
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.mode-text {
+  font-size: 22rpx;
+  color: var(--color-text-light);
+  font-weight: 500;
+}
+
+.mode-btn.active .mode-text {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}

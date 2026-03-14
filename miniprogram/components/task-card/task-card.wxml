@@ -1,0 +1,60 @@
+<!-- 任务卡片组件 - 玻璃拟态版 -->
+<view class="task-card {{completed ? 'completed' : ''}}" bindtap="onTap">
+  <view class="card-body">
+    <!-- 顶部：优先级 + 金币奖励 -->
+    <view class="card-header">
+      <view class="priority-dot" style="background: {{priorityColor}}"></view>
+      <text class="priority-label" style="color: {{priorityColor}}">{{priorityLabel}}</text>
+      <view class="spacer"></view>
+      <view class="coin-chip">
+        <text class="coin-text">+{{task.coinReward}}</text>
+        <text class="coin-spark">✨</text>
+      </view>
+    </view>
+
+    <!-- 标题 -->
+    <text class="task-title {{completed ? 'done' : ''}}">{{task.title}}</text>
+    <text class="task-desc" wx:if="{{task.description}}">{{task.description}}</text>
+
+    <!-- 进度条 -->
+    <view class="progress-row" wx:if="{{task.progress > 0 && !completed}}">
+      <view class="progress-track">
+        <view class="progress-bar" style="width: {{task.progress}}%">
+          <view class="progress-glow"></view>
+        </view>
+      </view>
+      <text class="progress-pct">{{task.progress}}%</text>
+    </view>
+
+    <!-- 底部标签 -->
+    <view class="tag-row">
+      <view class="info-tag" wx:if="{{task.estimatedMinutes}}">
+        <text>⏱ {{task.estimatedMinutes}}min</text>
+      </view>
+      <view class="info-tag energy" wx:if="{{task.energy}}" style="color: {{energyColor}}">
+        <text>{{energyLabel}}</text>
+      </view>
+      <view class="info-tag streak" wx:if="{{task.streakDays > 0}}">
+        <text>🔥 {{task.streakDays}}天</text>
+      </view>
+      <view class="spacer"></view>
+      <view class="info-tag due" wx:if="{{task.dueDate}}">
+        <text>{{task.dueDate}}</text>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-row" wx:if="{{!completed}}">
+      <button class="btn-done" catchtap="onComplete">完成 ✓</button>
+      <button class="btn-skip" catchtap="onSkip">换个角度看</button>
+    </view>
+
+    <!-- 完成状态 -->
+    <view class="done-badge" wx:if="{{completed}}">
+      <text>✅ 已完成</text>
+    </view>
+  </view>
+
+  <!-- 装饰性渐变圆 -->
+  <view class="deco-circle" style="background: {{priorityColor}}"></view>
+</view>

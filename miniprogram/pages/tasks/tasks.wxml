@@ -1,0 +1,141 @@
+<!-- 任务卡片列表页 -->
+<view class="container tasks-page">
+
+  <!-- 视图切换：列表 / 四象限 -->
+  <view class="view-toggle">
+    <view
+      class="toggle-item {{viewMode === 'list' ? 'active' : ''}}"
+      bindtap="switchView"
+      data-mode="list"
+    >
+      列表
+    </view>
+    <view
+      class="toggle-item {{viewMode === 'quadrant' ? 'active' : ''}}"
+      bindtap="switchView"
+      data-mode="quadrant"
+    >
+      四象限
+    </view>
+  </view>
+
+  <!-- 筛选标签 -->
+  <scroll-view class="filter-scroll" scroll-x enable-flex>
+    <view
+      wx:for="{{filters}}"
+      wx:key="value"
+      class="filter-tag {{activeFilter === item.value ? 'active' : ''}}"
+      bindtap="onFilterTap"
+      data-filter="{{item.value}}"
+    >
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <!-- 列表视图 -->
+  <view wx:if="{{viewMode === 'list'}}" class="task-list">
+    <!-- 进行中的任务 -->
+    <view class="task-group" wx:if="{{pendingTasks.length > 0}}">
+      <view class="group-title">进行中 ({{pendingTasks.length}})</view>
+      <task-card
+        wx:for="{{pendingTasks}}"
+        wx:key="id"
+        task="{{item}}"
+        mode="detail"
+        bind:complete="onTaskComplete"
+        bind:tap="onTaskDetail"
+      />
+    </view>
+
+    <!-- 已完成的任务 -->
+    <view class="task-group" wx:if="{{completedTasks.length > 0}}">
+      <view class="group-title text-secondary">已完成 ({{completedTasks.length}})</view>
+      <task-card
+        wx:for="{{completedTasks}}"
+        wx:key="id"
+        task="{{item}}"
+        mode="detail"
+        completed="{{true}}"
+      />
+    </view>
+
+    <!-- 空状态 -->
+    <empty-state
+      wx:if="{{pendingTasks.length === 0 && completedTasks.length === 0}}"
+      icon="📋"
+      title="还没有任务卡片"
+      subtitle="点下面的按钮创建你的第一个目标"
+    />
+  </view>
+
+  <!-- 四象限视图 -->
+  <view wx:if="{{viewMode === 'quadrant'}}" class="quadrant-view">
+    <view class="quadrant-grid">
+      <!-- 紧急且重要 -->
+      <view class="quadrant-cell urgent-important">
+        <view class="quadrant-label">🚨 紧急重要</view>
+        <view class="quadrant-hint">赶紧做</view>
+        <view
+          wx:for="{{quadrantTasks.urgentImportant}}"
+          wx:key="id"
+          class="quadrant-task"
+          bindtap="onTaskDetail"
+          data-id="{{item.id}}"
+        >
+          <text class="quadrant-task-title">{{item.title}}</text>
+          <text class="quadrant-task-coin">+{{item.coinReward}}</text>
+        </view>
+      </view>
+
+      <!-- 重要不紧急 -->
+      <view class="quadrant-cell important">
+        <view class="quadrant-label">🎯 重要</view>
+        <view class="quadrant-hint">优先做</view>
+        <view
+          wx:for="{{quadrantTasks.important}}"
+          wx:key="id"
+          class="quadrant-task"
+          bindtap="onTaskDetail"
+          data-id="{{item.id}}"
+        >
+          <text class="quadrant-task-title">{{item.title}}</text>
+          <text class="quadrant-task-coin">+{{item.coinReward}}</text>
+        </view>
+      </view>
+
+      <!-- 紧急不重要 -->
+      <view class="quadrant-cell urgent">
+        <view class="quadrant-label">⚡ 紧急</view>
+        <view class="quadrant-hint">快速处理</view>
+        <view
+          wx:for="{{quadrantTasks.urgent}}"
+          wx:key="id"
+          class="quadrant-task"
+          bindtap="onTaskDetail"
+          data-id="{{item.id}}"
+        >
+          <text class="quadrant-task-title">{{item.title}}</text>
+          <text class="quadrant-task-coin">+{{item.coinReward}}</text>
+        </view>
+      </view>
+
+      <!-- 不紧急不重要 -->
+      <view class="quadrant-cell normal">
+        <view class="quadrant-label">🌱 种子</view>
+        <view class="quadrant-hint">每天浇一点</view>
+        <view
+          wx:for="{{quadrantTasks.normal}}"
+          wx:key="id"
+          class="quadrant-task"
+          bindtap="onTaskDetail"
+          data-id="{{item.id}}"
+        >
+          <text class="quadrant-task-title">{{item.title}}</text>
+          <text class="quadrant-task-coin">+{{item.coinReward}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+
+</view>

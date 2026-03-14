@@ -1,0 +1,178 @@
+<!-- 未来信 - 给未来的自己写信 -->
+<view class="container letter-page">
+
+  <!-- 页面标题 -->
+  <view class="page-intro anim-float-in">
+    <text class="intro-title">给未来的自己</text>
+    <text class="intro-desc">写一封信，记录此刻的心情和期待</text>
+  </view>
+
+  <!-- 写信模式 -->
+  <view class="write-section" wx:if="{{mode === 'write'}}">
+    <!-- 信纸卡片 -->
+    <view class="letter-card card anim-scale-in">
+      <view class="letter-header">
+        <text class="letter-date">{{todayStr}}</text>
+        <text class="letter-to">致 {{deliverLabel}} 后的我</text>
+      </view>
+
+      <textarea
+        class="letter-content"
+        placeholder="亲爱的未来的我：\n\n今天我想对你说..."
+        placeholder-class="letter-placeholder"
+        value="{{letterContent}}"
+        bindinput="onContentInput"
+        maxlength="800"
+        auto-height
+      />
+
+      <view class="letter-footer">
+        <text class="char-count">{{letterContent.length}} / 800</text>
+      </view>
+    </view>
+
+    <!-- 送达时间选择 -->
+    <view class="deliver-section">
+      <text class="deliver-label">选择送达时间</text>
+      <view class="deliver-options">
+        <view
+          class="deliver-option {{deliverDays === item.days ? 'active' : ''}}"
+          wx:for="{{deliverOptions}}"
+          wx:key="days"
+          bindtap="selectDeliver"
+          data-days="{{item.days}}"
+        >
+          <text class="deliver-emoji">{{item.emoji}}</text>
+          <text class="deliver-text">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 当前心情记录 -->
+    <view class="mood-section">
+      <text class="mood-label">此刻的心情</text>
+      <view class="mood-options">
+        <view
+          class="mood-item {{currentMood === item.value ? 'active' : ''}}"
+          wx:for="{{moodOptions}}"
+          wx:key="value"
+          bindtap="selectMood"
+          data-value="{{item.value}}"
+        >
+          <text class="mood-emoji">{{item.emoji}}</text>
+          <text class="mood-text">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发送按钮 -->
+    <button
+      class="btn-primary send-btn"
+      bindtap="sendLetter"
+      disabled="{{!letterContent.trim() || !deliverDays}}"
+    >
+      封存这封信
+    </button>
+  </view>
+
+  <!-- 信箱模式 - 已发送的信 -->
+  <view class="mailbox-section" wx:if="{{mode === 'mailbox'}}">
+    <!-- 切换标签 -->
+    <view class="tab-row">
+      <view class="tab-item {{activeTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+        <text>待送达</text>
+        <text class="tab-badge" wx:if="{{pendingLetters.length}}">{{pendingLetters.length}}</text>
+      </view>
+      <view class="tab-item {{activeTab === 'delivered' ? 'active' : ''}}" bindtap="switchTab" data-tab="delivered">
+        <text>已送达</text>
+        <text class="tab-badge delivered" wx:if="{{deliveredLetters.length}}">{{deliveredLetters.length}}</text>
+      </view>
+    </view>
+
+    <!-- 待送达信件列表 -->
+    <view wx:if="{{activeTab === 'pending'}}">
+      <view class="letter-item card" wx:for="{{pendingLetters}}" wx:key="id">
+        <view class="letter-item-top">
+          <text class="letter-item-emoji">{{item.moodEmoji}}</text>
+          <view class="letter-item-info">
+            <text class="letter-item-date">写于 {{item.writeDate}}</text>
+            <text class="letter-item-deliver">{{item.deliverDate}} 送达</text>
+          </view>
+          <view class="letter-seal">
+            <text class="seal-icon">🔒</text>
+          </view>
+        </view>
+        <view class="letter-countdown">
+          <text class="countdown-text">还有 {{item.remainDays}} 天送达</text>
+          <view class="countdown-bar">
+            <view class="countdown-fill" style="width: {{item.progressPct}}%"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-hint" wx:if="{{pendingLetters.length === 0}}">
+        <text class="empty-emoji">📮</text>
+        <text class="empty-text">还没有待送达的信</text>
+        <text class="empty-sub">给未来的自己写一封吧</text>
+      </view>
+    </view>
+
+    <!-- 已送达信件列表 -->
+    <view wx:if="{{activeTab === 'delivered'}}">
+      <view class="letter-item card delivered-item" wx:for="{{deliveredLetters}}" wx:key="id" bindtap="openLetter" data-id="{{item.id}}">
+        <view class="letter-item-top">
+          <text class="letter-item-emoji">{{item.moodEmoji}}</text>
+          <view class="letter-item-info">
+            <text class="letter-item-date">写于 {{item.writeDate}}</text>
+            <text class="letter-item-deliver">已于 {{item.deliverDate}} 送达</text>
+          </view>
+          <view class="letter-open-badge">
+            <text wx:if="{{item.opened}}">已读</text>
+            <text wx:else class="new-badge">NEW</text>
+          </view>
+        </view>
+        <text class="letter-preview">{{item.preview}}</text>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-hint" wx:if="{{deliveredLetters.length === 0}}">
+        <text class="empty-emoji">💌</text>
+        <text class="empty-text">暂无已送达的信</text>
+        <text class="empty-sub">信会在你选择的日期到达</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 阅读信件弹窗 -->
+  <view class="read-modal" wx:if="{{showReadModal}}">
+    <view class="read-mask" bindtap="closeReadModal"></view>
+    <view class="read-content">
+      <view class="read-header">
+        <text class="read-mood">{{readLetter.moodEmoji}}</text>
+        <text class="read-date">{{readLetter.writeDate}} 写下</text>
+      </view>
+      <view class="read-body">
+        <text class="read-text">{{readLetter.content}}</text>
+      </view>
+      <view class="read-comparison" wx:if="{{readLetter.comparison}}">
+        <text class="comparison-label">成长对比</text>
+        <text class="comparison-text">{{readLetter.comparison}}</text>
+      </view>
+      <button class="btn-primary close-btn" bindtap="closeReadModal">好的，我看到了</button>
+    </view>
+  </view>
+
+  <!-- 底部模式切换 -->
+  <view class="mode-switch">
+    <view class="mode-btn {{mode === 'write' ? 'active' : ''}}" bindtap="switchMode" data-mode="write">
+      <text class="mode-icon">✍️</text>
+      <text class="mode-text">写信</text>
+    </view>
+    <view class="mode-btn {{mode === 'mailbox' ? 'active' : ''}}" bindtap="switchMode" data-mode="mailbox">
+      <text class="mode-icon">📬</text>
+      <text class="mode-text">信箱</text>
+    </view>
+  </view>
+
+</view>

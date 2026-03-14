@@ -1,0 +1,169 @@
+<!-- 个人中心页面 -->
+<view class="container profile-page">
+
+  <!-- 用户信息卡片 -->
+  <view class="user-card card">
+    <view class="user-avatar">
+      <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar-placeholder">🌟</view>
+    </view>
+    <view class="user-info">
+      <text class="user-name">{{userInfo.nickName || '新朋友'}}</text>
+      <text class="user-joined">加入 Wonderful 第 {{useDays}} 天</text>
+    </view>
+  </view>
+
+  <!-- 金币 & 数据统计 -->
+  <view class="coin-card card">
+    <view class="coin-overview">
+      <text class="coin-amount-large">{{stats.totalCoins}}</text>
+      <text class="coin-label">💰 金币</text>
+    </view>
+  </view>
+
+  <view class="stats-card card">
+    <view class="stats-grid">
+      <view class="stats-item">
+        <text class="stats-value">{{stats.totalCompleted}}</text>
+        <text class="stats-label">已完成</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{stats.streakDays}}</text>
+        <text class="stats-label">连续天数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{stats.completionRate}}%</text>
+        <text class="stats-label">完成率</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 安全气囊 -->
+  <view class="airbag-card card" bindtap="showAirbagInfo">
+    <view class="airbag-left">
+      <view class="airbag-icon-wrap">
+        <text class="airbag-icon">🛡️</text>
+      </view>
+      <view class="airbag-info">
+        <text class="airbag-title">安全气囊</text>
+        <text class="airbag-desc">本月剩余 {{airbag.remaining}} 次免打卡日</text>
+      </view>
+    </view>
+    <view class="airbag-dots">
+      <view class="airbag-dot {{airbag.remaining >= 1 ? 'active' : 'used'}}"></view>
+      <view class="airbag-dot {{airbag.remaining >= 2 ? 'active' : 'used'}}"></view>
+    </view>
+  </view>
+
+  <!-- 成就徽章 -->
+  <view class="section-card card">
+    <view class="section-header">
+      <text class="section-title">成就徽章</text>
+      <text class="section-more">查看全部</text>
+    </view>
+    <view class="badges-row">
+      <view
+        wx:for="{{badges}}"
+        wx:key="id"
+        class="badge-item {{item.unlocked ? '' : 'locked'}}"
+      >
+        <text class="badge-icon">{{item.icon}}</text>
+        <text class="badge-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="feature-entries">
+    <view class="feature-entry card" bindtap="goToBuddy">
+      <text class="feature-icon">🤝</text>
+      <view class="feature-text">
+        <text class="feature-name">搭子模式</text>
+        <text class="feature-desc">找个搭子一起卷</text>
+      </view>
+      <text class="setting-arrow">›</text>
+    </view>
+    <view class="feature-entry card" bindtap="shareWeeklyReport">
+      <text class="feature-icon">📊</text>
+      <view class="feature-text">
+        <text class="feature-name">我的周报</text>
+        <text class="feature-desc">查看本周战报</text>
+      </view>
+      <text class="setting-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 设置项列表 -->
+  <view class="settings-card card">
+    <view class="setting-item" bindtap="onSettingTap" data-key="reminder">
+      <text class="setting-icon">⏰</text>
+      <text class="setting-label">提醒时间</text>
+      <text class="setting-value">{{settings.morningTime}} / {{settings.eveningTime}}</text>
+      <text class="setting-arrow">›</text>
+    </view>
+    <view class="setting-item" bindtap="onSettingTap" data-key="style">
+      <text class="setting-icon">🎨</text>
+      <text class="setting-label">AI 风格</text>
+      <text class="setting-value">{{settings.aiStyle}}</text>
+      <text class="setting-arrow">›</text>
+    </view>
+    <view class="setting-item" bindtap="onSettingTap" data-key="share">
+      <text class="setting-icon">📤</text>
+      <text class="setting-label">分享周报</text>
+      <text class="setting-value"></text>
+      <text class="setting-arrow">›</text>
+    </view>
+    <view class="setting-item" bindtap="onSettingTap" data-key="about">
+      <text class="setting-icon">💡</text>
+      <text class="setting-label">关于 Wonderful</text>
+      <text class="setting-value"></text>
+      <text class="setting-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 底部 slogan -->
+  <view class="footer-slogan">
+    <text>不是逼自己变好</text>
+    <text>而是让自己觉得变好很爽</text>
+  </view>
+
+  <!-- 安全气囊详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showAirbagModal}}" bindtap="closeAirbagModal">
+    <view class="modal-content card" catchtap="preventTap">
+      <view class="modal-header">
+        <text class="modal-emoji">🛡️</text>
+        <text class="modal-title">安全气囊</text>
+      </view>
+      <view class="modal-body">
+        <text class="modal-desc">每月赠送 2 次"免打卡日"，使用后不中断连续天数。</text>
+        <view class="modal-status">
+          <text class="modal-label">本月剩余</text>
+          <view class="modal-dots-large">
+            <view class="airbag-dot-large {{airbag.remaining >= 1 ? 'active' : 'used'}}">
+              <text>🛡️</text>
+            </view>
+            <view class="airbag-dot-large {{airbag.remaining >= 2 ? 'active' : 'used'}}">
+              <text>🛡️</text>
+            </view>
+          </view>
+        </view>
+        <view class="modal-rules">
+          <text class="modal-rule">· 每月 1 日自动补充 2 次</text>
+          <text class="modal-rule">· 未使用的次数不会累积到下月</text>
+          <text class="modal-rule">· 断打卡时系统会提示使用</text>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <button
+          class="btn-primary modal-btn"
+          bindtap="useAirbag"
+          disabled="{{airbag.remaining <= 0}}"
+        >
+          {{airbag.remaining > 0 ? '使用一次气囊' : '本月已用完'}}
+        </button>
+        <text class="modal-close" bindtap="closeAirbagModal">关闭</text>
+      </view>
+    </view>
+  </view>
+
+</view>

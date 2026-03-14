@@ -1,0 +1,110 @@
+/* 对话气泡 - 玻璃拟态版 */
+.bubble-wrapper {
+  display: flex;
+  margin-bottom: 28rpx;
+  align-items: flex-start;
+  animation: float-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.bubble-left {
+  flex-direction: row;
+}
+
+.bubble-right {
+  flex-direction: row-reverse;
+}
+
+/* AI 头像 - 渐变光晕 */
+.bubble-avatar {
+  position: relative;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #7C5CFC, #A78BFA);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.avatar-glow {
+  position: absolute;
+  inset: -8rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, rgba(124,92,252,0.3), rgba(167,139,250,0.15));
+  z-index: -1;
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.bubble-right .bubble-avatar {
+  margin-right: 0;
+  margin-left: 16rpx;
+}
+
+.avatar-text {
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+/* 气泡内容 */
+.bubble-body {
+  max-width: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bubble-right .bubble-body {
+  align-items: flex-end;
+}
+
+.bubble-content {
+  padding: 28rpx 32rpx;
+  line-height: 1.8;
+}
+
+/* AI 气泡 - 毛玻璃 */
+.ai-bubble {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(40rpx);
+  -webkit-backdrop-filter: blur(40rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.6);
+  border-radius: 8rpx 28rpx 28rpx 28rpx;
+  box-shadow: 0 4rpx 20rpx rgba(124, 92, 252, 0.06);
+}
+
+/* 用户气泡 - 渐变 */
+.user-bubble {
+  background: linear-gradient(135deg, #7C5CFC, #A78BFA);
+  color: #FFFFFF;
+  border-radius: 28rpx 8rpx 28rpx 28rpx;
+  box-shadow: 0 6rpx 24rpx rgba(124, 92, 252, 0.25);
+}
+
+.bubble-text {
+  font-size: 28rpx;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.ai-bubble .bubble-text {
+  color: #1E1B4B;
+}
+
+.bubble-time {
+  font-size: 20rpx;
+  color: #A5A5C0;
+  margin-top: 8rpx;
+  padding: 0 8rpx;
+}
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(24rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.08); opacity: 1; }
+}

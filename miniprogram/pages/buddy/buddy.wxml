@@ -1,0 +1,144 @@
+<!-- 搭子模式 - 匿名互助打卡 -->
+<view class="container buddy-page">
+
+  <!-- 未匹配状态：选择目标 + 匹配 -->
+  <block wx:if="{{!hasMatch}}">
+    <!-- 头部介绍 -->
+    <view class="intro-section anim-float-in">
+      <view class="intro-emoji">🤝</view>
+      <text class="intro-title">找个搭子一起卷</text>
+      <text class="intro-desc">匿名匹配相同目标的伙伴，双方完成 = 双倍金币</text>
+    </view>
+
+    <!-- 目标类型选择 -->
+    <view class="goal-section anim-float-in anim-delay-1">
+      <text class="section-label">选择你的目标方向</text>
+      <view class="goal-grid">
+        <view
+          wx:for="{{goalTypes}}"
+          wx:key="id"
+          class="goal-chip {{item.selected ? 'selected' : ''}}"
+          bindtap="onGoalSelect"
+          data-id="{{item.id}}"
+        >
+          <text class="goal-chip-icon">{{item.icon}}</text>
+          <text class="goal-chip-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 匹配按钮 -->
+    <view class="match-section anim-float-in anim-delay-2">
+      <button
+        class="btn-primary match-btn {{isMatching ? 'matching' : ''}}"
+        bindtap="startMatching"
+        disabled="{{isMatching || !selectedGoal}}"
+      >
+        {{isMatching ? '正在匹配中...' : '开始匹配搭子'}}
+      </button>
+    </view>
+
+    <!-- 说明卡片 -->
+    <view class="rules-card card anim-float-in anim-delay-3">
+      <text class="rules-title">搭子规则</text>
+      <view class="rule-item">
+        <text class="rule-icon">🔒</text>
+        <text class="rule-text">完全匿名，只看到对方完成状态</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">🎯</text>
+        <text class="rule-text">匹配相同目标方向的伙伴</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">💰</text>
+        <text class="rule-text">双方当日都完成 = 额外 20 金币</text>
+      </view>
+      <view class="rule-item">
+        <text class="rule-icon">🔄</text>
+        <text class="rule-text">随时可以更换搭子</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 已匹配状态：互助打卡面板 -->
+  <block wx:else>
+    <!-- 鼓励消息横幅 -->
+    <view class="encourage-banner anim-float-in">
+      <text class="encourage-text">{{encourageMsg}}</text>
+    </view>
+
+    <!-- 双人打卡面板 -->
+    <view class="duo-panel card anim-float-in anim-delay-1">
+      <!-- 我的状态 -->
+      <view class="duo-side my-side">
+        <view class="duo-avatar-wrap {{myStatus.todayDone ? 'done' : ''}}">
+          <text class="duo-avatar">🌟</text>
+          <view wx:if="{{myStatus.todayDone}}" class="done-check">✓</view>
+        </view>
+        <text class="duo-label">我</text>
+        <text class="duo-streak">🔥 {{myStatus.streakDays}}天</text>
+      </view>
+
+      <!-- 中间连接 -->
+      <view class="duo-center">
+        <view class="duo-vs {{bothDone ? 'both-done' : ''}}">
+          <text wx:if="{{bothDone}}" class="vs-text">🎉</text>
+          <text wx:else class="vs-text">VS</text>
+        </view>
+        <view wx:if="{{bothDone}}" class="bonus-badge">
+          <text class="bonus-text">+{{bonusCoins}} 金币</text>
+        </view>
+        <text class="duo-goal-tag tag tag-purple">{{selectedGoal.icon}} {{selectedGoal.label}}</text>
+      </view>
+
+      <!-- 搭子状态 -->
+      <view class="duo-side buddy-side">
+        <view class="duo-avatar-wrap {{buddy.todayDone ? 'done' : ''}}">
+          <text class="duo-avatar">{{buddy.avatar}}</text>
+          <view wx:if="{{buddy.todayDone}}" class="done-check">✓</view>
+        </view>
+        <text class="duo-label">搭子</text>
+        <text class="duo-streak">🔥 {{buddy.streakDays}}天</text>
+      </view>
+    </view>
+
+    <!-- 打卡按钮 -->
+    <view class="checkin-section anim-float-in anim-delay-2">
+      <button
+        class="{{myStatus.todayDone ? 'checkin-btn done' : 'btn-primary checkin-btn'}}"
+        bindtap="onCheckin"
+        disabled="{{myStatus.todayDone}}"
+      >
+        {{myStatus.todayDone ? '今日已打卡 ✓' : '打卡完成今日目标'}}
+      </button>
+    </view>
+
+    <!-- 今日状态详情 -->
+    <view class="status-card card anim-float-in anim-delay-3">
+      <view class="status-row">
+        <text class="status-label">我的状态</text>
+        <text class="status-value {{myStatus.todayDone ? 'text-accent' : 'text-secondary'}}">
+          {{myStatus.todayDone ? '已完成' : '未完成'}}
+        </text>
+      </view>
+      <view class="status-row">
+        <text class="status-label">搭子状态</text>
+        <text class="status-value {{buddy.todayDone ? 'text-accent' : 'text-secondary'}}">
+          {{buddy.todayDone ? '已完成' : '未完成'}}
+        </text>
+      </view>
+      <view class="status-row">
+        <text class="status-label">双人加成</text>
+        <text class="status-value {{bothDone ? 'text-coin' : 'text-secondary'}}">
+          {{bothDone ? '+' + bonusCoins + ' 金币' : '等待双方完成'}}
+        </text>
+      </view>
+    </view>
+
+    <!-- 更换搭子 -->
+    <view class="change-section anim-float-in anim-delay-4">
+      <text class="change-link" bindtap="changeBuddy">更换搭子</text>
+    </view>
+  </block>
+
+</view>

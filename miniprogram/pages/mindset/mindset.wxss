@@ -1,0 +1,271 @@
+/* 思维转换库 - 年轻化版 */
+
+/* 页面标题 - 大字渐变 */
+.page-intro {
+  padding: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+.intro-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  letter-spacing: -1rpx;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.intro-desc {
+  display: block;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+}
+
+/* 分类筛选 - 胶囊 */
+.filter-scroll {
+  white-space: nowrap;
+  margin: var(--spacing-md) 0 var(--spacing-lg);
+}
+
+.filter-tag {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  margin-right: var(--spacing-sm);
+  border-radius: var(--radius-2xl);
+  font-size: 24rpx;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1rpx solid rgba(124, 92, 252, 0.08);
+  transition: all 0.2s ease;
+}
+
+.filter-tag.active {
+  color: var(--color-primary);
+  background: rgba(124, 92, 252, 0.1);
+  border-color: rgba(124, 92, 252, 0.2);
+}
+
+/* 转换卡片 - 玻璃拟态 */
+.shift-card {
+  padding: var(--spacing-lg) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 卡片装饰 */
+.shift-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30rpx;
+  left: -30rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,92,252,0.04), rgba(255,107,157,0.04));
+  pointer-events: none;
+}
+
+.original-thought {
+  margin-bottom: var(--spacing-md);
+}
+
+.thought-label {
+  display: block;
+  font-size: 22rpx;
+  color: var(--color-text-light);
+  margin-bottom: 8rpx;
+  font-weight: 500;
+}
+
+.thought-text {
+  font-size: 28rpx;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.shift-arrow {
+  text-align: center;
+  font-size: 24rpx;
+  padding: var(--spacing-sm) 0;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+/* 转换后文字 - 高亮区域 */
+.reframed-thought {
+  background: linear-gradient(135deg, rgba(124,92,252,0.04), rgba(255,107,157,0.04));
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-left: 6rpx solid;
+  border-image: var(--gradient-sunset) 1;
+}
+
+.reframe-text {
+  font-size: 30rpx;
+  color: var(--color-text);
+  line-height: 1.9;
+  font-weight: 600;
+}
+
+/* 操作按钮 */
+.shift-actions {
+  display: flex;
+  gap: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+}
+
+.shift-action {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.shift-action.liked {
+  color: var(--color-secondary);
+}
+
+/* AI 生成 - 渐变边框卡片 */
+.generate-section {
+  margin-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+}
+
+.generate-card {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg) !important;
+  border: 2rpx dashed rgba(124, 92, 252, 0.25) !important;
+  background: linear-gradient(135deg, rgba(124,92,252,0.03), rgba(255,107,157,0.03)) !important;
+}
+
+.generate-card:active {
+  transform: scale(0.98);
+}
+
+.generate-icon {
+  font-size: 52rpx;
+  margin-right: var(--spacing-md);
+}
+
+.generate-text {
+  flex: 1;
+}
+
+.generate-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.generate-desc {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  margin-top: 6rpx;
+}
+
+/* 弹窗 - 毛玻璃 */
+.generate-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 27, 75, 0.4);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+  animation: slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-input {
+  width: 100%;
+  height: 160rpx;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-size: 28rpx;
+  box-sizing: border-box;
+  border: 1rpx solid rgba(124, 92, 252, 0.08);
+}
+
+.modal-result {
+  background: linear-gradient(135deg, rgba(124,92,252,0.04), rgba(255,107,157,0.04));
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+  border-left: 6rpx solid;
+  border-image: var(--gradient-sunset) 1;
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.modal-result-text {
+  font-size: 30rpx;
+  color: var(--color-text);
+  line-height: 1.8;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.modal-actions button {
+  flex: 1;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}

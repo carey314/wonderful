@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "思维转换",
+  "usingComponents": {
+    "empty-state": "/components/empty-state/empty-state"
+  }
+}

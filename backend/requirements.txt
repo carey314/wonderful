@@ -1,0 +1,28 @@
+# Wonderful 后端依赖
+# Web 框架
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# 异步 HTTP 客户端（调用 AI API）
+httpx==0.28.1
+
+# 数据校验（FastAPI 内置依赖，显式声明版本）
+pydantic==2.10.4
+
+# 定时任务（晨启/晚审推送）
+apscheduler==3.10.4
+
+# 数据库迁移（后续扩展用）
+aiosqlite==0.20.0
+
+# 环境变量管理
+python-dotenv==1.0.1
+
+# 微信小程序登录解密
+pycryptodome==3.21.0
+
+# JWT 认证
+python-jose[cryptography]==3.3.0
+
+# 密码哈希（备用）
+passlib[bcrypt]==1.7.4

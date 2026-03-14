@@ -1,0 +1,229 @@
+/* 任务卡片 - 玻璃拟态版 */
+.task-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(40rpx);
+  -webkit-backdrop-filter: blur(40rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  border-radius: 28rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.task-card:active {
+  transform: scale(0.97);
+}
+
+.task-card.completed {
+  opacity: 0.55;
+}
+
+/* 装饰性渐变圆 */
+.deco-circle {
+  position: absolute;
+  top: -40rpx;
+  right: -40rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.card-body {
+  position: relative;
+  padding: 28rpx 32rpx;
+  z-index: 1;
+}
+
+/* 头部 */
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.priority-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: 12rpx;
+  box-shadow: 0 0 12rpx currentColor;
+}
+
+.priority-label {
+  font-size: 22rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.coin-chip {
+  display: flex;
+  align-items: center;
+  padding: 6rpx 18rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(255,107,157,0.08));
+}
+
+.coin-text {
+  font-size: 24rpx;
+  font-weight: 700;
+  background: linear-gradient(135deg, #D97706, #FBBF24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.coin-spark {
+  font-size: 18rpx;
+  margin-left: 4rpx;
+}
+
+/* 标题 */
+.task-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1E1B4B;
+  line-height: 1.5;
+  letter-spacing: -0.5rpx;
+}
+
+.task-title.done {
+  text-decoration: line-through;
+  color: #A5A5C0;
+}
+
+.task-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-top: 8rpx;
+  line-height: 1.6;
+}
+
+/* 进度条 - 渐变发光 */
+.progress-row {
+  display: flex;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+.progress-track {
+  flex: 1;
+  height: 14rpx;
+  background: rgba(124, 92, 252, 0.06);
+  border-radius: 7rpx;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 7rpx;
+  background: linear-gradient(90deg, #7C5CFC, #A78BFA);
+  position: relative;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.progress-glow {
+  position: absolute;
+  right: 0;
+  top: -4rpx;
+  bottom: -4rpx;
+  width: 32rpx;
+  background: radial-gradient(circle, rgba(167,139,250,0.6), transparent);
+  border-radius: 50%;
+}
+
+.progress-pct {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #7C5CFC;
+  margin-left: 16rpx;
+  min-width: 64rpx;
+  text-align: right;
+}
+
+/* 标签行 */
+.tag-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.info-tag {
+  font-size: 22rpx;
+  color: #6B7280;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  background: rgba(124, 92, 252, 0.04);
+}
+
+.info-tag.streak {
+  background: rgba(255, 107, 157, 0.06);
+}
+
+.info-tag.due {
+  color: #A5A5C0;
+  background: transparent;
+}
+
+/* 操作按钮 */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+}
+
+.btn-done {
+  flex: 1;
+  background: linear-gradient(135deg, #7C5CFC, #A78BFA);
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 16rpx 0;
+  border-radius: 40rpx;
+  border: none;
+  letter-spacing: 2rpx;
+  box-shadow: 0 6rpx 20rpx rgba(124, 92, 252, 0.25);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-done:active {
+  transform: scale(0.95);
+}
+
+.btn-done::after {
+  border: none;
+}
+
+.btn-skip {
+  flex: none;
+  background: transparent;
+  color: #A5A5C0;
+  font-size: 24rpx;
+  padding: 16rpx 24rpx;
+  border: none;
+}
+
+.btn-skip::after {
+  border: none;
+}
+
+/* 完成徽章 */
+.done-badge {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: #06D6A0;
+  font-weight: 500;
+}

@@ -1,0 +1,332 @@
+/* app.wxss - 全局样式 */
+/* 年轻化、玻璃拟态、渐变色设计系统 */
+
+page {
+  /* 多彩渐变配色 - 鲜活但不刺眼 */
+  --color-primary: #7C5CFC;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #6344E0;
+  --color-secondary: #FF6B9D;
+  --color-accent: #06D6A0;
+  --color-accent-blue: #38BDF8;
+  --color-accent-yellow: #FBBF24;
+  --color-accent-pink: #F472B6;
+
+  /* 背景 - 淡紫灰带微光感 */
+  --color-bg: #F5F3FF;
+  --color-bg-secondary: #EDE9FE;
+  --color-bg-card: rgba(255, 255, 255, 0.72);
+  --color-bg-glass: rgba(255, 255, 255, 0.45);
+
+  /* 文字 */
+  --color-text: #1E1B4B;
+  --color-text-secondary: #6B7280;
+  --color-text-light: #A5A5C0;
+  --color-text-white: #FFFFFF;
+
+  /* 语义色 */
+  --color-success: #06D6A0;
+  --color-danger: #FF6B6B;
+  --color-warning: #FBBF24;
+  --color-coin: #FBBF24;
+  --color-border: rgba(124, 92, 252, 0.08);
+
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, #7C5CFC, #A78BFA, #C4B5FD);
+  --gradient-warm: linear-gradient(135deg, #FF6B9D, #FBBF24);
+  --gradient-cool: linear-gradient(135deg, #38BDF8, #06D6A0);
+  --gradient-sunset: linear-gradient(135deg, #7C5CFC, #FF6B9D);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  --gradient-mesh: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 25%, #FDF2F8 50%, #F0FDFA 75%, #F5F3FF 100%);
+
+  /* 圆角 - 更大更圆润 */
+  --radius-sm: 16rpx;
+  --radius-md: 24rpx;
+  --radius-lg: 36rpx;
+  --radius-xl: 52rpx;
+  --radius-2xl: 80rpx;
+
+  /* 阴影 - 彩色阴影 */
+  --shadow-sm: 0 4rpx 16rpx rgba(124, 92, 252, 0.06);
+  --shadow-md: 0 8rpx 32rpx rgba(124, 92, 252, 0.10);
+  --shadow-lg: 0 16rpx 48rpx rgba(124, 92, 252, 0.15);
+  --shadow-glow: 0 0 40rpx rgba(124, 92, 252, 0.20);
+  --shadow-pink: 0 8rpx 32rpx rgba(255, 107, 157, 0.15);
+  --shadow-blue: 0 8rpx 32rpx rgba(56, 189, 248, 0.15);
+
+  /* 玻璃拟态 */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: 1rpx solid rgba(255, 255, 255, 0.5);
+  --glass-blur: blur(40rpx);
+
+  /* 间距 */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+  --spacing-2xl: 64rpx;
+
+  background: var(--gradient-mesh);
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+/* ======================== */
+/* 通用容器 */
+/* ======================== */
+.container {
+  padding: var(--spacing-lg);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ======================== */
+/* 玻璃拟态卡片 */
+/* ======================== */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+/* 强调卡片 - 渐变背景 */
+.card-highlight {
+  background: var(--gradient-primary);
+  color: var(--color-text-white);
+  border: none;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ======================== */
+/* 按钮系统 - 活力渐变 */
+/* ======================== */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--color-text-white);
+  border: none;
+  border-radius: var(--radius-2xl);
+  padding: 24rpx 56rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  box-shadow: 0 8rpx 24rpx rgba(124, 92, 252, 0.35);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 4rpx 12rpx rgba(124, 92, 252, 0.25);
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--color-primary);
+  border: 2rpx solid rgba(124, 92, 252, 0.2);
+  border-radius: var(--radius-2xl);
+  padding: 22rpx 56rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
+  background: rgba(124, 92, 252, 0.08);
+}
+
+.btn-secondary::after {
+  border: none;
+}
+
+/* 胶囊小按钮 */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 12rpx 28rpx;
+  border-radius: var(--radius-2xl);
+  font-size: 24rpx;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-pill::after {
+  border: none;
+}
+
+.btn-pill.warm {
+  background: linear-gradient(135deg, rgba(255,107,157,0.12), rgba(251,191,36,0.12));
+  color: var(--color-secondary);
+}
+
+.btn-pill.cool {
+  background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(6,214,160,0.12));
+  color: var(--color-accent);
+}
+
+/* ======================== */
+/* 标签/胶囊 */
+/* ======================== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: var(--radius-xl);
+  font-size: 22rpx;
+  font-weight: 500;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.tag-purple {
+  background: rgba(124, 92, 252, 0.1);
+  color: var(--color-primary);
+}
+
+.tag-pink {
+  background: rgba(255, 107, 157, 0.1);
+  color: var(--color-secondary);
+}
+
+.tag-green {
+  background: rgba(6, 214, 160, 0.1);
+  color: var(--color-accent);
+}
+
+.tag-blue {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--color-accent-blue);
+}
+
+.tag-yellow {
+  background: rgba(251, 191, 36, 0.1);
+  color: #D97706;
+}
+
+/* ======================== */
+/* 文字工具类 */
+/* ======================== */
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-accent { color: var(--color-accent); }
+.text-pink { color: var(--color-secondary); }
+.text-coin { color: var(--color-coin); }
+.text-gradient {
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ======================== */
+/* 布局工具类 */
+/* ======================== */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ======================== */
+/* 动画关键帧 */
+/* ======================== */
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20rpx rgba(124, 92, 252, 0.15); }
+  50% { box-shadow: 0 0 40rpx rgba(124, 92, 252, 0.30); }
+}
+
+/* 通用动画类 */
+.anim-float-in {
+  animation: float-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.anim-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.anim-bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.anim-delay-1 { animation-delay: 0.1s; }
+.anim-delay-2 { animation-delay: 0.2s; }
+.anim-delay-3 { animation-delay: 0.3s; }
+.anim-delay-4 { animation-delay: 0.4s; }

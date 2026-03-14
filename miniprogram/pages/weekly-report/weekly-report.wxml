@@ -1,0 +1,99 @@
+<!-- Wonderful Wrapped 周报 -->
+<view class="container report-page {{showContent ? 'show' : ''}}">
+
+  <!-- 周报头部 - 渐变背景 -->
+  <view class="report-header anim-float-in">
+    <view class="report-header-bg"></view>
+    <view class="report-header-content">
+      <text class="report-brand">Wonderful</text>
+      <text class="report-week">第 {{weekNum}} 周战报</text>
+      <text class="report-date">{{dateRange}}</text>
+    </view>
+  </view>
+
+  <!-- 核心数据卡片 -->
+  <view class="data-hero card anim-float-in anim-delay-1">
+    <view class="hero-grid">
+      <view class="hero-item">
+        <text class="hero-value text-gradient">{{stats.tasksCompleted}}</text>
+        <text class="hero-label">完成任务</text>
+      </view>
+      <view class="hero-divider"></view>
+      <view class="hero-item">
+        <text class="hero-value text-gradient">{{stats.totalCoins}}</text>
+        <text class="hero-label">获得金币</text>
+      </view>
+      <view class="hero-divider"></view>
+      <view class="hero-item">
+        <text class="hero-value text-gradient">{{stats.streakDays}}</text>
+        <text class="hero-label">连续天数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打败 X% 用户 - 高亮卡片 -->
+  <view class="beat-card card-highlight card anim-float-in anim-delay-2">
+    <text class="beat-emoji">🚀</text>
+    <text class="beat-text">你打败了</text>
+    <text class="beat-percent">{{stats.beatPercent}}%</text>
+    <text class="beat-text">的用户</text>
+  </view>
+
+  <!-- 每日完成柱状图 -->
+  <view class="chart-card card anim-float-in anim-delay-3">
+    <text class="chart-title">每日完成趋势</text>
+    <view class="chart-bars">
+      <view class="bar-col" wx:for="{{dailyBars}}" wx:key="day">
+        <view class="bar-fill" style="height: {{item.height}}rpx;">
+          <text class="bar-count" wx:if="{{item.count > 0}}">{{item.count}}</text>
+        </view>
+        <text class="bar-day">{{item.day}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 详细数据 -->
+  <view class="detail-card card anim-float-in anim-delay-3">
+    <view class="detail-row">
+      <text class="detail-icon">📊</text>
+      <text class="detail-label">完成率</text>
+      <text class="detail-value">{{stats.completionRate}}%</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-icon">⏰</text>
+      <text class="detail-label">最高效时段</text>
+      <text class="detail-value">{{stats.bestTimeSlot}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-icon">⏱</text>
+      <text class="detail-label">总投入时间</text>
+      <text class="detail-value">{{stats.totalMinutes}} 分钟</text>
+    </view>
+  </view>
+
+  <!-- 本周亮点 -->
+  <view class="highlights-card card anim-float-in anim-delay-4">
+    <text class="highlights-title">本周亮点</text>
+    <view class="highlight-item" wx:for="{{highlights}}" wx:key="text">
+      <text class="highlight-icon">{{item.icon}}</text>
+      <text class="highlight-text">{{item.text}}</text>
+    </view>
+  </view>
+
+  <!-- 底部 slogan + 分享 -->
+  <view class="report-footer anim-float-in anim-delay-4">
+    <view class="footer-quote">
+      <text class="quote-text">不是在"自律"</text>
+      <text class="quote-text">是在"跟自己做交易"</text>
+    </view>
+    <view class="share-buttons">
+      <button class="btn-primary share-btn" open-type="share">
+        分享给好友
+      </button>
+      <button class="btn-secondary share-btn" bindtap="onShareToMoments">
+        保存到相册
+      </button>
+    </view>
+  </view>
+
+</view>

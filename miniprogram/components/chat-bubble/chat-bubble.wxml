@@ -1,0 +1,15 @@
+<!-- 对话气泡组件 - 玻璃拟态版 -->
+<view class="bubble-wrapper {{type === 'user' ? 'bubble-right' : 'bubble-left'}}">
+  <!-- AI 头像 - 渐变光晕 -->
+  <view wx:if="{{type === 'ai'}}" class="bubble-avatar">
+    <view class="avatar-glow"></view>
+    <text class="avatar-text">W</text>
+  </view>
+
+  <view class="bubble-body">
+    <view class="bubble-content {{type === 'user' ? 'user-bubble' : 'ai-bubble'}}">
+      <text class="bubble-text">{{content}}</text>
+    </view>
+    <text class="bubble-time">{{timestamp}}</text>
+  </view>
+</view>

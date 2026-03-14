@@ -1,0 +1,79 @@
+<!-- 新建任务页面 -->
+<view class="container add-task-page">
+
+  <!-- 任务名称 -->
+  <view class="form-section">
+    <view class="form-label">做什么？</view>
+    <input
+      class="form-input"
+      placeholder="输入任务名称，比如学 Python"
+      value="{{title}}"
+      bindinput="onTitleInput"
+    />
+  </view>
+
+  <!-- 预估时间 -->
+  <view class="form-section">
+    <view class="form-label">大概需要多久？</view>
+    <view class="time-options">
+      <view
+        wx:for="{{timeOptions}}"
+        wx:key="value"
+        class="time-option {{estimatedMinutes === item.value ? 'active' : ''}}"
+        bindtap="onTimeSelect"
+        data-value="{{item.value}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 截止日期 -->
+  <view class="form-section">
+    <view class="form-label">什么时候之前完成？（可选）</view>
+    <view class="date-options">
+      <view
+        wx:for="{{dateOptions}}"
+        wx:key="value"
+        class="date-option {{dueDate === item.value ? 'active' : ''}}"
+        bindtap="onDateSelect"
+        data-value="{{item.value}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类标签 -->
+  <view class="form-section">
+    <view class="form-label">分类标签（可选）</view>
+    <view class="category-options">
+      <view
+        wx:for="{{categories}}"
+        wx:key="value"
+        class="category-option {{category === item.value ? 'active' : ''}}"
+        bindtap="onCategorySelect"
+        data-value="{{item.value}}"
+      >
+        {{item.icon}} {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- AI 思维转换预览 -->
+  <view class="ai-preview card" wx:if="{{aiPreview}}">
+    <view class="ai-preview-header">
+      <text class="ai-avatar">W</text>
+      <text class="ai-label">AI 说：</text>
+    </view>
+    <text class="ai-preview-text">{{aiPreview}}</text>
+  </view>
+
+  <!-- 创建按钮 -->
+  <view class="submit-section">
+    <button class="btn-primary submit-btn" bindtap="onSubmit" disabled="{{!title}}">
+      创建
+    </button>
+  </view>
+
+</view>

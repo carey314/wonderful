@@ -1,0 +1,41 @@
+/* 空状态组件 - 年轻化版 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 96rpx 48rpx;
+  animation: float-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 28rpx;
+  animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.empty-title {
+  font-size: 30rpx;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.5rpx;
+}
+
+.empty-subtitle {
+  font-size: 24rpx;
+  color: var(--color-text-light);
+  margin-top: 12rpx;
+  text-align: center;
+  line-height: 1.8;
+}
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
