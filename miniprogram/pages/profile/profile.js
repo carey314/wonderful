@@ -1,20 +1,22 @@
 // 个人中心页面
+const storage = require('../../utils/storage')
+
 Page({
   data: {
     userInfo: {},
-    useDays: 23,
+    useDays: 1,
     stats: {
-      totalCompleted: 156,
-      streakDays: 23,
-      totalCoins: 2350,
-      completionRate: 73,
+      totalCompleted: 0,
+      streakDays: 0,
+      totalCoins: 0,
+      completionRate: 0,
     },
     badges: [
       { id: '1', icon: '🌱', name: '新芽', unlocked: true },
       { id: '2', icon: '🌿', name: '成长', unlocked: false },
       { id: '3', icon: '🌳', name: '参天', unlocked: false },
-      { id: '4', icon: '⭐', name: '清零大师', unlocked: true },
-      { id: '5', icon: '🏆', name: '终结拖延', unlocked: true },
+      { id: '4', icon: '⭐', name: '清零大师', unlocked: false },
+      { id: '5', icon: '🏆', name: '终结拖延', unlocked: false },
       { id: '6', icon: '💎', name: '里程碑', unlocked: false },
     ],
     settings: {
@@ -24,12 +26,12 @@ Page({
     },
     // 安全气囊
     airbag: {
-      remaining: 2,     // 本月剩余次数
-      total: 2,         // 每月总次数
-      usedThisMonth: 0, // 本月已使用
-      lastResetMonth: '', // 上次重置月份
+      remaining: 2,
+      total: 2,
+      usedThisMonth: 0,
+      lastResetMonth: '',
     },
-    showAirbagModal: false, // 是否显示气囊弹窗
+    showAirbagModal: false,
   },
 
   onLoad() {
@@ -37,11 +39,62 @@ Page({
     if (app.globalData.userInfo) {
       this.setData({ userInfo: app.globalData.userInfo })
     }
+    this.loadStats()
+    this.loadSettings()
     this.loadAirbagData()
+    this.updateBadges()
   },
 
   onShow() {
+    this.loadStats()
     this.loadAirbagData()
+    this.updateBadges()
+  },
+
+  // 加载真实统计数据
+  loadStats() {
+    const stats = storage.stats.get()
+    const userInfo = wx.getStorageSync('userInfo')
+    const createdAt = userInfo && userInfo.createdAt ? userInfo.createdAt : Date.now()
+    const useDays = Math.max(1, Math.ceil((Date.now() - createdAt) / 86400000))
+
+    this.setData({
+      useDays: useDays,
+      stats: {
+        totalCompleted: stats.totalCompleted,
+        streakDays: stats.streakDays,
+        totalCoins: stats.totalCoins,
+        completionRate: stats.completionRate,
+      },
+    })
+  },
+
+  // 加载设置
+  loadSettings() {
+    const settings = storage.settings.get()
+    this.setData({
+      'settings.morningTime': settings.morningTime || '08:00',
+      'settings.eveningTime': settings.eveningTime || '21:00',
+      'settings.aiStyle': settings.aiStyle || '温暖朋友',
+    })
+  },
+
+  // 根据统计数据更新徽章解锁状态
+  updateBadges() {
+    const stats = storage.stats.get()
+    const badges = this.data.badges.map(function (b) {
+      var unlocked = false
+      switch (b.id) {
+        case '1': unlocked = true; break // 新芽：注册即解锁
+        case '2': unlocked = stats.totalCompleted >= 10; break // 成长：完成10个任务
+        case '3': unlocked = stats.totalCompleted >= 100; break // 参天：完成100个任务
+        case '4': unlocked = stats.streakDays >= 7; break // 清零大师：连续7天
+        case '5': unlocked = stats.streakDays >= 30; break // 终结拖延：连续30天
+        case '6': unlocked = stats.totalCoins >= 1000; break // 里程碑：累计1000金币
+      }
+      return Object.assign({}, b, { unlocked: unlocked })
+    })
+    this.setData({ badges: badges })
   },
 
   // 加载安全气囊数据
@@ -55,7 +108,6 @@ Page({
       lastResetMonth: currentMonth,
     }
 
-    // 每月自动重置
     if (airbag.lastResetMonth !== currentMonth) {
       airbag = {
         remaining: 2,
@@ -90,7 +142,6 @@ Page({
     wx.showToast({ title: '气囊已激活，连续天数保住了！', icon: 'none', duration: 2500 })
   },
 
-  // 显示/关闭气囊弹窗
   showAirbagInfo() {
     this.setData({ showAirbagModal: true })
   },
@@ -99,7 +150,6 @@ Page({
     this.setData({ showAirbagModal: false })
   },
 
-  // 阻止弹窗穿透
   preventTap() {},
 
   // 设置项点击
@@ -118,10 +168,10 @@ Page({
       case 'about':
         wx.showModal({
           title: 'Wonderful',
-          content: '不是逼自己变好，而是让自己觉得变好很爽。\n\n一个每天跟你聊两句的 AI 朋友，帮你想清楚最值得做的事。',
+          content: '不是逼自己变好，而是让自己觉得变好很爽。\n\n一个帮你整理思路、管理任务的成长工具。',
           showCancel: false,
           confirmText: '好的',
-          confirmColor: '#FF8C42',
+          confirmColor: '#7C5CFC',
         })
         break
     }
@@ -142,8 +192,11 @@ Page({
             'settings.morningTime': times[res.tapIndex].morningTime,
             'settings.eveningTime': times[res.tapIndex].eveningTime,
           })
+          storage.settings.update({
+            morningTime: times[res.tapIndex].morningTime,
+            eveningTime: times[res.tapIndex].eveningTime,
+          })
         }
-        // TODO: 保存到后端
       },
     })
   },
@@ -155,17 +208,15 @@ Page({
       success: (res) => {
         const styles = ['温暖朋友', '幽默段子手', '理性分析师']
         this.setData({ 'settings.aiStyle': styles[res.tapIndex] })
-        // TODO: 保存到后端
+        storage.settings.update({ aiStyle: styles[res.tapIndex] })
       },
     })
   },
 
-  // 跳转周报页面
   shareWeeklyReport() {
     wx.navigateTo({ url: '/pages/weekly-report/weekly-report' })
   },
 
-  // 跳转搭子模式
   goToBuddy() {
     wx.navigateTo({ url: '/pages/buddy/buddy' })
   },

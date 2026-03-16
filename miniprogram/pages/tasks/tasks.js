@@ -3,6 +3,7 @@ const {
   createTask, createSubtask, smartSort, getProjectInfo,
   toggleSubtask, PROJECT_PRESETS,
 } = require('../../utils/task-model')
+const storage = require('../../utils/storage')
 
 const projectKeys = Object.keys(PROJECT_PRESETS)
 
@@ -32,69 +33,14 @@ Page({
   },
 
   onShow() {
+    // 每次回到页面从 storage 重新加载
     this.loadTasks()
   },
 
-  // 加载任务数据
+  // 从本地存储加载所有任务
   loadTasks() {
-    // TODO: 对接后端 API，目前使用 mock 数据
-    const allTasks = smartSort([
-      createTask({
-        title: '学完 Python 基础课程',
-        description: '第8章 + 3道练习题',
-        priority: 'important',
-        energy: 'high',
-        estimatedMinutes: 45,
-        project: 'study',
-        subtasks: [
-          createSubtask({ title: '阅读教程内容', estimatedMinutes: 20, completed: true }),
-          createSubtask({ title: '完成练习题1', estimatedMinutes: 8, completed: true }),
-          createSubtask({ title: '完成练习题2', estimatedMinutes: 8 }),
-          createSubtask({ title: '完成练习题3', estimatedMinutes: 9 }),
-        ],
-      }),
-      createTask({
-        title: '写完项目方案书',
-        description: '标题+三个要点，先不管格式',
-        priority: 'urgent_important',
-        energy: 'high',
-        estimatedMinutes: 60,
-        project: 'work',
-        deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-        subtasks: [
-          createSubtask({ title: '梳理需求要点', estimatedMinutes: 15 }),
-          createSubtask({ title: '写大纲框架', estimatedMinutes: 20 }),
-          createSubtask({ title: '填充内容', estimatedMinutes: 25 }),
-        ],
-      }),
-      createTask({
-        title: '回复3封邮件',
-        description: '待处理的客户邮件',
-        priority: 'urgent',
-        energy: 'low',
-        estimatedMinutes: 15,
-        project: 'work',
-      }),
-      createTask({
-        title: '每天跑步30分钟',
-        description: '今天至少跑2公里',
-        priority: 'normal',
-        energy: 'medium',
-        estimatedMinutes: 30,
-        project: 'health',
-      }),
-      createTask({
-        title: '整理书桌',
-        description: '清理桌面，物品归位',
-        priority: 'normal',
-        energy: 'low',
-        estimatedMinutes: 15,
-        project: 'life',
-        status: 'completed',
-      }),
-    ])
-
-    this.setData({ allTasks })
+    const allTasks = smartSort(storage.tasks.list())
+    this.setData({ allTasks: allTasks })
     this.refreshViews()
   },
 
@@ -154,26 +100,44 @@ Page({
     this.applyFilter()
   },
 
-  // 任务完成
+  // 任务完成 -> 持久化
   onTaskComplete(e) {
     const { taskId } = e.detail
-    const allTasks = this.data.allTasks.map((t) => {
-      if (t.id === taskId) return Object.assign({}, t, { status: 'completed' })
-      return t
-    })
-    this.setData({ allTasks })
-    this.refreshViews()
+    const result = storage.tasks.complete(taskId)
+    if (!result) return
 
-    const task = allTasks.find((t) => t.id === taskId)
+    // 重新从 storage 加载
+    this.loadTasks()
+
     wx.vibrateShort({ type: 'medium' })
-    wx.showToast({ title: `+${task ? task.coinReward : 0} 金币`, icon: 'none' })
+    wx.showToast({ title: `+${result.coinReward} 金币`, icon: 'none' })
   },
 
-  // 子任务勾选
+  // 子任务勾选 -> 持久化
   onSubtaskToggle(e) {
     const { taskId, updatedTask } = e.detail
+    storage.tasks.update(taskId, {
+      subtasks: updatedTask.subtasks,
+      status: updatedTask.status,
+      updatedAt: updatedTask.updatedAt,
+    })
+
+    // 如果子任务全部完成导致主任务完成
+    if (updatedTask.status === 'completed') {
+      var task = storage.tasks.get(taskId)
+      if (task) {
+        storage.coins.add(task.coinReward || 0)
+        storage.stats.logCompletion(taskId, task.coinReward || 0, task.estimatedMinutes || 0)
+        storage.streak.update()
+        wx.vibrateShort({ type: 'medium' })
+        wx.showToast({ title: `+${task.coinReward || 0} 金币`, icon: 'none' })
+      }
+      this.loadTasks()
+      return
+    }
+
     const allTasks = this.data.allTasks.map((t) => t.id === taskId ? updatedTask : t)
-    this.setData({ allTasks })
+    this.setData({ allTasks: allTasks })
     this.refreshViews()
   },
 

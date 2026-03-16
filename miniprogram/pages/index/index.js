@@ -6,6 +6,7 @@ const {
   formatMinutes, getProjectInfo, smartSort, toggleSubtask,
   PROJECT_PRESETS, getTotalEstimatedMinutes,
 } = require('../../utils/task-model')
+const storage = require('../../utils/storage')
 
 Page({
   data: {
@@ -72,84 +73,26 @@ Page({
   },
 
   onShow() {
+    // 每次回到首页从 storage 重新加载，确保跨页面同步
+    this.loadTodayData()
+  },
+
+  // 从本地存储加载今日数据
+  loadTodayData() {
+    const allTasks = storage.tasks.today()
+    const todayTasks = smartSort(allTasks.filter(function (t) {
+      return t.status !== 'completed' && t.status !== 'archived'
+    }))
+    const completedTasks = allTasks.filter(function (t) {
+      return t.status === 'completed' || t.status === 'archived'
+    })
+
     const app = getApp()
     this.setData({
-      coins: formatCoins(app.globalData.coins),
-      streakDays: app.globalData.streakDays,
-    })
-  },
-
-  // 加载今日数据
-  async loadTodayData() {
-    try {
-      // TODO: 对接后端 API 后替换 mock 数据
-      this.loadMockData()
-    } catch (err) {
-      console.error('加载今日数据失败:', err)
-      this.loadMockData()
-    }
-  },
-
-  // V2 Mock 数据 — 使用 createTask 工厂函数
-  loadMockData() {
-    const todayTasks = smartSort([
-      createTask({
-        title: '完成项目方案',
-        description: '客户要的运营方案初稿',
-        priority: 'urgent_important',
-        energy: 'high',
-        estimatedMinutes: 90,
-        project: 'work',
-        deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-        subtasks: [
-          createSubtask({ title: '梳理需求要点', estimatedMinutes: 20 }),
-          createSubtask({ title: '写大纲框架', estimatedMinutes: 30 }),
-          createSubtask({ title: '填充内容细节', estimatedMinutes: 30 }),
-          createSubtask({ title: '排版美化', estimatedMinutes: 10 }),
-        ],
-      }),
-      createTask({
-        title: 'Python 第8章',
-        description: '看完教程 + 完成3道练习题',
-        priority: 'important',
-        energy: 'high',
-        estimatedMinutes: 45,
-        project: 'study',
-        subtasks: [
-          createSubtask({ title: '阅读教程内容', estimatedMinutes: 20 }),
-          createSubtask({ title: '完成练习题1', estimatedMinutes: 8 }),
-          createSubtask({ title: '完成练习题2', estimatedMinutes: 8 }),
-          createSubtask({ title: '完成练习题3', estimatedMinutes: 9 }),
-        ],
-      }),
-      createTask({
-        title: '回复客户邮件',
-        priority: 'urgent',
-        energy: 'low',
-        estimatedMinutes: 10,
-        project: 'work',
-      }),
-      createTask({
-        title: '整理书桌',
-        description: '把桌面上的东西归位',
-        priority: 'normal',
-        energy: 'low',
-        estimatedMinutes: 15,
-        project: 'life',
-      }),
-      createTask({
-        title: '跑步30分钟',
-        priority: 'normal',
-        energy: 'high',
-        estimatedMinutes: 30,
-        project: 'health',
-      }),
-    ])
-
-    this.setData({
-      todayTasks,
-      coins: formatCoins(2350),
-      streakDays: 23,
+      todayTasks: todayTasks,
+      completedTasks: completedTasks,
+      coins: formatCoins(app.globalData.coins || storage.coins.get()),
+      streakDays: app.globalData.streakDays || storage.streak.get(),
     })
 
     this.updateCapacity(todayTasks)
@@ -201,39 +144,51 @@ Page({
     this.applyFilter()
   },
 
-  // 任务完成 -> 归档 + 金币
+  // 任务完成 -> 持久化 + 金币
   onTaskComplete(e) {
     const { taskId } = e.detail
-    const task = this.data.todayTasks.find((t) => t.id === taskId)
-    if (!task) return
+    const result = storage.tasks.complete(taskId)
+    if (!result) return
 
-    const coinReward = task.coinReward || 0
-    const todayTasks = this.data.todayTasks.filter((t) => t.id !== taskId)
-    const completedTasks = [...this.data.completedTasks, { ...task, status: 'completed' }]
-
-    const app = getApp()
-    app.globalData.coins = (app.globalData.coins || 0) + coinReward
-    wx.setStorageSync('coins', app.globalData.coins)
-
-    this.setData({ todayTasks, completedTasks, coins: formatCoins(app.globalData.coins) })
-
-    this.updateCapacity(todayTasks)
-    this.updateProjectFilters(todayTasks)
-    this.applyFilter()
+    // 重新从 storage 加载，确保数据一致
+    this.loadTodayData()
 
     wx.vibrateShort({ type: 'medium' })
-    wx.showToast({ title: `+${coinReward} 金币 ✨`, icon: 'none' })
+    wx.showToast({ title: `+${result.coinReward} 金币`, icon: 'none' })
 
-    if (todayTasks.length === 0) {
-      wx.showToast({ title: '今日任务全部完成 🎉', icon: 'none', duration: 2000 })
+    // 检查是否全部完成
+    if (this.data.todayTasks.length === 0) {
+      setTimeout(() => {
+        wx.showToast({ title: '今日任务全部完成 🎉', icon: 'none', duration: 2000 })
+      }, 1000)
     }
   },
 
-  // 子任务勾选
+  // 子任务勾选 -> 持久化
   onSubtaskToggle(e) {
     const { taskId, updatedTask } = e.detail
+    storage.tasks.update(taskId, {
+      subtasks: updatedTask.subtasks,
+      status: updatedTask.status,
+      updatedAt: updatedTask.updatedAt,
+    })
+
+    // 如果子任务全部完成导致主任务完成，走完成流程
+    if (updatedTask.status === 'completed') {
+      var task = storage.tasks.get(taskId)
+      if (task) {
+        storage.coins.add(task.coinReward || 0)
+        storage.stats.logCompletion(taskId, task.coinReward || 0, task.estimatedMinutes || 0)
+        storage.streak.update()
+        wx.vibrateShort({ type: 'medium' })
+        wx.showToast({ title: `+${task.coinReward || 0} 金币`, icon: 'none' })
+      }
+      this.loadTodayData()
+      return
+    }
+
     const todayTasks = this.data.todayTasks.map((t) => t.id === taskId ? updatedTask : t)
-    this.setData({ todayTasks })
+    this.setData({ todayTasks: todayTasks })
     this.updateCapacity(todayTasks)
     this.applyFilter()
   },
@@ -271,21 +226,20 @@ Page({
     })
   },
 
-  // 确认添加解析出的任务
+  // 确认添加解析出的任务 -> 持久化
   onConfirmPreview() {
     const newTasks = this.data.previewTasks
-    const todayTasks = smartSort([...this.data.todayTasks, ...newTasks])
+    // 批量保存到 storage
+    storage.tasks.createBatch(newTasks)
+
+    // 重新从 storage 加载，确保数据一致
+    this.loadTodayData()
 
     this.setData({
-      todayTasks,
       showPreview: false,
       previewTasks: [],
       inputValue: '',
     })
-
-    this.updateCapacity(todayTasks)
-    this.updateProjectFilters(todayTasks)
-    this.applyFilter()
 
     wx.showToast({ title: `已添加 ${newTasks.length} 个任务`, icon: 'none' })
   },

@@ -1,4 +1,6 @@
 // 思维转换库页面
+const storage = require('../../utils/storage')
+
 Page({
   data: {
     activeCategory: 'all',
@@ -98,6 +100,13 @@ Page({
       },
     ]
 
+    // 合并持久化的点赞/收藏状态
+    const state = storage.mindset.getState()
+    shifts.forEach(function (s) {
+      if (state.liked[s.id]) s.liked = true
+      if (state.collected[s.id]) s.collected = true
+    })
+
     this.setData({ shifts })
   },
 
@@ -105,12 +114,12 @@ Page({
   onCategoryTap(e) {
     const value = e.currentTarget.dataset.value
     this.setData({ activeCategory: value })
-    // TODO: 筛选对应分类
   },
 
-  // 点赞
+  // 点赞（持久化）
   onLike(e) {
     const id = e.currentTarget.dataset.id
+    storage.mindset.toggleLike(id)
     const shifts = this.data.shifts.map((s) => {
       if (s.id === id) {
         return {
@@ -124,9 +133,10 @@ Page({
     this.setData({ shifts })
   },
 
-  // 收藏
+  // 收藏（持久化）
   onCollect(e) {
     const id = e.currentTarget.dataset.id
+    storage.mindset.toggleCollect(id)
     const shifts = this.data.shifts.map((s) => {
       if (s.id === id) {
         return { ...s, collected: !s.collected }

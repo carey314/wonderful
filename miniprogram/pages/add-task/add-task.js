@@ -1,5 +1,6 @@
 // 新建任务页面 - V2 升级版
 const { createTask, createSubtask, PROJECT_PRESETS, formatMinutes } = require('../../utils/task-model')
+const storage = require('../../utils/storage')
 
 const projectList = Object.keys(PROJECT_PRESETS).map(function (key) {
   return Object.assign({ key: key }, PROJECT_PRESETS[key])
@@ -127,8 +128,8 @@ Page({
       subtasks: subtasks,
     })
 
-    // TODO: 持久化任务数据（对接后端或本地存储）
-    console.log('创建任务:', task)
+    // 持久化到本地存储
+    storage.tasks.create(task)
 
     wx.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => {

@@ -1,4 +1,7 @@
 // Onboarding 引导流程
+const storage = require('../../utils/storage')
+const { createTask } = require('../../utils/task-model')
+
 Page({
   data: {
     step: 1,
@@ -94,6 +97,7 @@ Page({
       nickName: this.data.nickname,
       wakeTime: this.data.wakeTime,
       sleepTime: this.data.sleepTime,
+      createdAt: Date.now(),
     }
     app.globalData.userInfo = userInfo
     app.globalData.coins = 100 // 首次奖励
@@ -104,7 +108,17 @@ Page({
     wx.setStorageSync('streakDays', 1)
     wx.setStorageSync('onboardingDone', true)
 
-    // TODO: 调用后端 API 创建用户和第一个任务
+    // 初始化存储层
+    storage.init()
+
+    // 如果用户输入了第一个任务，持久化保存
+    if (this.data.firstTask && this.data.firstTask.trim()) {
+      const task = createTask({
+        title: this.data.firstTask.trim(),
+        estimatedMinutes: this.data.firstTaskDuration || 30,
+      })
+      storage.tasks.create(task)
+    }
 
     // 跳转首页
     wx.switchTab({ url: '/pages/index/index' })
