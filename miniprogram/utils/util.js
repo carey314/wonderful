@@ -53,6 +53,45 @@ function formatCoins(num) {
 }
 
 /**
+ * 格式化截止日期为友好的中文显示（面向未来）
+ * 用于 V2 任务卡片的 deadline 展示
+ * @param {string} dateStr - ISO 日期字符串 (YYYY-MM-DD) 或 Date 可解析格式
+ * @returns {string} 如 "今天"、"明天"、"后天"、"周五"、"3月28日"
+ */
+function formatDeadline(dateStr) {
+  if (!dateStr) return ''
+  var target = new Date(dateStr)
+  if (isNaN(target.getTime())) return ''
+
+  var now = new Date()
+  // 归一化到日期（去掉时间部分）
+  var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  var targetStart = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+  var diffDays = Math.round((targetStart - todayStart) / 86400000)
+
+  if (diffDays === 0) return '今天'
+  if (diffDays === 1) return '明天'
+  if (diffDays === 2) return '后天'
+  if (diffDays < 0) return '已过期'
+  if (diffDays <= 7) {
+    var days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    return days[target.getDay()]
+  }
+  return (target.getMonth() + 1) + '月' + target.getDate() + '日'
+}
+
+/**
+ * 获取今天的 ISO 日期字符串 (YYYY-MM-DD)
+ */
+function getTodayString() {
+  var d = new Date()
+  var y = d.getFullYear()
+  var m = String(d.getMonth() + 1).padStart(2, '0')
+  var day = String(d.getDate()).padStart(2, '0')
+  return y + '-' + m + '-' + day
+}
+
+/**
  * 优先级标签映射 - 年轻化配色
  */
 const priorityMap = {
@@ -73,6 +112,8 @@ const energyMap = {
 
 module.exports = {
   formatDate,
+  formatDeadline,
+  getTodayString,
   getGreeting,
   getWeekday,
   formatCoins,

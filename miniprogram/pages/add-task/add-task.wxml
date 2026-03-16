@@ -1,4 +1,4 @@
-<!-- 新建任务页面 -->
+<!-- 新建任务页面 - V2 -->
 <view class="container add-task-page">
 
   <!-- 任务名称 -->
@@ -6,73 +6,119 @@
     <view class="form-label">做什么？</view>
     <input
       class="form-input"
-      placeholder="输入任务名称，比如学 Python"
+      placeholder="输入任务名称"
       value="{{title}}"
       bindinput="onTitleInput"
     />
   </view>
 
+  <!-- 描述（可选） -->
+  <view class="form-section">
+    <view class="form-label-opt">补充说明（可选）</view>
+    <input
+      class="form-input form-input-sm"
+      placeholder="简单描述一下"
+      value="{{description}}"
+      bindinput="onDescInput"
+    />
+  </view>
+
+  <!-- 项目选择 -->
+  <view class="form-section">
+    <view class="form-label-opt">项目分组</view>
+    <scroll-view class="project-scroll" scroll-x>
+      <view class="project-scroll-inner">
+        <view
+          class="project-chip {{project === item.key ? 'active' : ''}}"
+          wx:for="{{projectList}}"
+          wx:key="key"
+          bindtap="onProjectSelect"
+          data-key="{{item.key}}"
+          style="{{project === item.key ? 'background:' + item.color + '; color: #fff; border-color:' + item.color + ';' : 'color:' + item.color + '; border-color:' + item.color + '30;'}}"
+        >
+          {{item.icon}} {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
   <!-- 预估时间 -->
   <view class="form-section">
-    <view class="form-label">大概需要多久？</view>
+    <view class="form-label-opt">预估时间</view>
     <view class="time-options">
       <view
         wx:for="{{timeOptions}}"
         wx:key="value"
-        class="time-option {{estimatedMinutes === item.value ? 'active' : ''}}"
+        class="time-option {{estimatedMinutes === item.value && !customTime ? 'active' : ''}}"
         bindtap="onTimeSelect"
         data-value="{{item.value}}"
       >
         {{item.label}}
       </view>
+      <input
+        class="time-custom-input"
+        type="number"
+        placeholder="自定义(分钟)"
+        value="{{customTime}}"
+        bindinput="onCustomTimeInput"
+      />
     </view>
   </view>
 
   <!-- 截止日期 -->
   <view class="form-section">
-    <view class="form-label">什么时候之前完成？（可选）</view>
-    <view class="date-options">
-      <view
-        wx:for="{{dateOptions}}"
-        wx:key="value"
-        class="date-option {{dueDate === item.value ? 'active' : ''}}"
-        bindtap="onDateSelect"
-        data-value="{{item.value}}"
-      >
-        {{item.label}}
-      </view>
+    <view class="form-label-opt">截止日期</view>
+    <view class="deadline-row">
+      <picker mode="date" value="{{deadline}}" bindchange="onDateChange">
+        <view class="deadline-picker {{deadline ? 'has-value' : ''}}">
+          <text>{{deadline || '选择日期'}}</text>
+          <text class="deadline-icon">📅</text>
+        </view>
+      </picker>
+      <view class="deadline-clear" wx:if="{{deadline}}" catchtap="clearDeadline">✕</view>
     </view>
   </view>
 
-  <!-- 分类标签 -->
+  <!-- 紧急/重要标记 -->
   <view class="form-section">
-    <view class="form-label">分类标签（可选）</view>
-    <view class="category-options">
-      <view
-        wx:for="{{categories}}"
-        wx:key="value"
-        class="category-option {{category === item.value ? 'active' : ''}}"
-        bindtap="onCategorySelect"
-        data-value="{{item.value}}"
-      >
-        {{item.icon}} {{item.label}}
+    <view class="form-label-opt">优先级标记</view>
+    <view class="priority-toggles">
+      <view class="priority-toggle {{isUrgent ? 'active urgent' : ''}}" bindtap="toggleUrgent">
+        <text>⚡ 紧急</text>
+      </view>
+      <view class="priority-toggle {{isImportant ? 'active important' : ''}}" bindtap="toggleImportant">
+        <text>🎯 重要</text>
       </view>
     </view>
   </view>
 
-  <!-- AI 思维转换预览 -->
-  <view class="ai-preview card" wx:if="{{aiPreview}}">
-    <view class="ai-preview-header">
-      <text class="ai-avatar">W</text>
-      <text class="ai-label">AI 说：</text>
+  <!-- 子任务 -->
+  <view class="form-section">
+    <view class="form-label-opt">子步骤</view>
+    <view class="subtask-list-edit">
+      <view class="subtask-edit-item" wx:for="{{subtasks}}" wx:key="id">
+        <view class="subtask-edit-dot"></view>
+        <text class="subtask-edit-title">{{item.title}}</text>
+        <view class="subtask-edit-remove" catchtap="removeSubtask" data-id="{{item.id}}">✕</view>
+      </view>
     </view>
-    <text class="ai-preview-text">{{aiPreview}}</text>
+    <view class="subtask-add-row">
+      <input
+        class="subtask-add-input"
+        placeholder="添加子步骤"
+        value="{{subtaskInput}}"
+        bindinput="onSubtaskInput"
+        bindconfirm="addSubtask"
+        confirm-type="done"
+      />
+      <view class="subtask-add-btn" bindtap="addSubtask">+ 添加</view>
+    </view>
   </view>
 
   <!-- 创建按钮 -->
   <view class="submit-section">
     <button class="btn-primary submit-btn" bindtap="onSubmit" disabled="{{!title}}">
-      创建
+      创建任务
     </button>
   </view>
 

@@ -1,106 +1,134 @@
-// 新建任务页面
+// 新建任务页面 - V2 升级版
+const { createTask, createSubtask, PROJECT_PRESETS, formatMinutes } = require('../../utils/task-model')
+
+const projectList = Object.keys(PROJECT_PRESETS).map(function (key) {
+  return Object.assign({ key: key }, PROJECT_PRESETS[key])
+})
+
 Page({
   data: {
     title: '',
-    estimatedMinutes: 30,
-    dueDate: '',
-    category: '',
-    aiPreview: '',
-
+    description: '',
+    estimatedMinutes: 0,
+    deadline: '',
+    project: '',
+    isUrgent: false,
+    isImportant: false,
+    // 子任务
+    subtasks: [],
+    subtaskInput: '',
+    // 选项
+    projectList: projectList,
     timeOptions: [
-      { label: '15分钟', value: 15 },
-      { label: '30分钟', value: 30 },
-      { label: '1小时', value: 60 },
-      { label: '不确定', value: 0 },
+      { label: '15min', value: 15 },
+      { label: '30min', value: 30 },
+      { label: '1h', value: 60 },
+      { label: '1.5h', value: 90 },
+      { label: '2h', value: 120 },
+      { label: '半天', value: 240 },
     ],
-
-    dateOptions: [
-      { label: '今天', value: 'today' },
-      { label: '本周', value: 'week' },
-      { label: '选日期', value: 'custom' },
-      { label: '不设', value: '' },
-    ],
-
-    categories: [
-      { icon: '💼', label: '工作', value: 'work' },
-      { icon: '📚', label: '学习', value: 'study' },
-      { icon: '💪', label: '健康', value: 'health' },
-      { icon: '🏠', label: '生活', value: 'life' },
-    ],
+    customTime: '',
   },
 
-  // 输入任务名称
+  // --- 基础输入 ---
+
   onTitleInput(e) {
-    const title = e.detail.value
-    this.setData({ title })
-
-    // 输入完成后延迟生成 AI 思维转换预览
-    if (this._aiTimer) clearTimeout(this._aiTimer)
-    if (title.length >= 2) {
-      this._aiTimer = setTimeout(() => this.generateAIPreview(title), 800)
-    } else {
-      this.setData({ aiPreview: '' })
-    }
+    this.setData({ title: e.detail.value })
   },
 
-  // 选择预估时间
+  onDescInput(e) {
+    this.setData({ description: e.detail.value })
+  },
+
+  // --- 时间预估 ---
+
   onTimeSelect(e) {
-    this.setData({ estimatedMinutes: e.currentTarget.dataset.value })
-  },
-
-  // 选择截止日期
-  onDateSelect(e) {
-    const value = e.currentTarget.dataset.value
-    if (value === 'custom') {
-      // TODO: 弹出日期选择器
-      wx.showToast({ title: '日期选择开发中', icon: 'none' })
-      return
-    }
-    this.setData({ dueDate: value })
-  },
-
-  // 选择分类
-  onCategorySelect(e) {
     const value = e.currentTarget.dataset.value
     this.setData({
-      category: this.data.category === value ? '' : value,
+      estimatedMinutes: this.data.estimatedMinutes === value ? 0 : value,
+      customTime: '',
     })
   },
 
-  // 生成 AI 思维转换预览
-  generateAIPreview(title) {
-    // TODO: 调用后端 AI API 生成思维转换
-    // 目前使用 mock 数据
-    const previews = {
-      学: `学${title.replace('学', '')}？不错。学会这个 = 简历多一行 = 多一个选择。值得。`,
-      写: `写文档不是在给老板交差，是在练习把脑子里的想法变成别人能看懂的东西。这个能力，走哪都值钱。`,
-      跑: `你今天不想跑步，60岁的你会花多少钱买一副能跑步的膝盖？这投资回报率，巴菲特看了都眼红。`,
-      读: `每看10页书 = 比昨天的自己多知道一点。你不需要今天看完，你只需要比昨天多走一步。`,
+  onCustomTimeInput(e) {
+    const val = parseInt(e.detail.value, 10)
+    if (val > 0) {
+      this.setData({ estimatedMinutes: val, customTime: e.detail.value })
+    } else {
+      this.setData({ customTime: e.detail.value })
     }
-
-    // 简单匹配第一个字
-    const firstChar = title[0]
-    const preview = previews[firstChar] || `"${title}"这件事做了，你会比现在的自己多一个可能性。这就够了。`
-
-    this.setData({ aiPreview: preview })
   },
 
-  // 提交创建任务
+  // --- 截止日期 ---
+
+  onDateChange(e) {
+    this.setData({ deadline: e.detail.value })
+  },
+
+  clearDeadline() {
+    this.setData({ deadline: '' })
+  },
+
+  // --- 项目选择 ---
+
+  onProjectSelect(e) {
+    const key = e.currentTarget.dataset.key
+    this.setData({ project: this.data.project === key ? '' : key })
+  },
+
+  // --- 紧急/重要标记 ---
+
+  toggleUrgent() {
+    this.setData({ isUrgent: !this.data.isUrgent })
+  },
+
+  toggleImportant() {
+    this.setData({ isImportant: !this.data.isImportant })
+  },
+
+  // --- 子任务 ---
+
+  onSubtaskInput(e) {
+    this.setData({ subtaskInput: e.detail.value })
+  },
+
+  addSubtask() {
+    const title = this.data.subtaskInput.trim()
+    if (!title) return
+    const subtasks = [...this.data.subtasks, { id: 'sub_' + Date.now(), title: title, estimatedMinutes: 0 }]
+    this.setData({ subtasks, subtaskInput: '' })
+  },
+
+  removeSubtask(e) {
+    const id = e.currentTarget.dataset.id
+    this.setData({ subtasks: this.data.subtasks.filter((s) => s.id !== id) })
+  },
+
+  // --- 提交 ---
+
   onSubmit() {
     if (!this.data.title.trim()) {
       wx.showToast({ title: '请输入任务名称', icon: 'none' })
       return
     }
 
-    const taskData = {
-      title: this.data.title.trim(),
-      estimated_minutes: this.data.estimatedMinutes || 30,
-      due_date: this.data.dueDate,
-      category: this.data.category,
-    }
+    const subtasks = this.data.subtasks.map(function (s) {
+      return createSubtask({ title: s.title, estimatedMinutes: s.estimatedMinutes || 0 })
+    })
 
-    // TODO: 调用后端 API 创建任务
-    console.log('创建任务:', taskData)
+    const task = createTask({
+      title: this.data.title.trim(),
+      description: this.data.description.trim(),
+      estimatedMinutes: this.data.estimatedMinutes || 30,
+      deadline: this.data.deadline,
+      project: this.data.project,
+      isUrgent: this.data.isUrgent,
+      isImportant: this.data.isImportant,
+      subtasks: subtasks,
+    })
+
+    // TODO: 持久化任务数据（对接后端或本地存储）
+    console.log('创建任务:', task)
 
     wx.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => {

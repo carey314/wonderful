@@ -1,4 +1,4 @@
-/* 任务卡片列表页 - 年轻化版 */
+/* 任务卡片列表页 - V2 */
 .tasks-page {
   padding-bottom: 40rpx;
 }
@@ -33,31 +33,38 @@
   box-shadow: 0 4rpx 16rpx rgba(124, 92, 252, 0.25);
 }
 
-/* 筛选标签 - 胶囊 */
+/* 项目筛选 - 与首页一致 */
 .filter-scroll {
   white-space: nowrap;
   margin-bottom: var(--spacing-lg);
 }
 
-.filter-tag {
-  display: inline-block;
-  padding: 12rpx 28rpx;
-  margin-right: var(--spacing-sm);
-  border-radius: var(--radius-2xl);
-  font-size: 24rpx;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1rpx solid rgba(124, 92, 252, 0.08);
-  transition: all 0.2s ease;
+.filter-inner {
+  display: inline-flex;
+  gap: var(--spacing-sm);
+  padding: 4rpx 0;
 }
 
-.filter-tag.active {
-  color: var(--color-primary);
-  background: rgba(124, 92, 252, 0.1);
-  border-color: rgba(124, 92, 252, 0.2);
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 24rpx;
+  border-radius: var(--radius-2xl);
+  font-size: 22rpx;
+  font-weight: 600;
+  background: var(--glass-bg);
+  border: 1rpx solid rgba(124, 92, 252, 0.08);
+  transition: all 0.25s ease;
+}
+
+.filter-chip.active {
+  box-shadow: 0 4rpx 16rpx rgba(124, 92, 252, 0.2);
+}
+
+.filter-count {
+  font-size: 20rpx;
+  opacity: 0.7;
 }
 
 /* 任务分组 */
@@ -72,6 +79,28 @@
   margin-bottom: var(--spacing-md);
   padding-left: 8rpx;
   letter-spacing: 1rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-2xl) 0;
+}
+
+.empty-emoji { font-size: 64rpx; margin-bottom: var(--spacing-md); }
+
+.empty-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: var(--color-text-light);
 }
 
 /* 四象限 - 玻璃卡片 */
@@ -98,22 +127,11 @@
   transform: scale(0.97);
 }
 
-/* 四象限顶部渐变条 */
-.quadrant-cell.urgent-important {
-  border-top: 6rpx solid #FF6B6B;
-}
-
-.quadrant-cell.important {
-  border-top: 6rpx solid #7C5CFC;
-}
-
-.quadrant-cell.urgent {
-  border-top: 6rpx solid #FF6B9D;
-}
-
-.quadrant-cell.normal {
-  border-top: 6rpx solid #06D6A0;
-}
+/* 四象限顶部颜色条 */
+.quadrant-cell.urgent-important { border-top: 6rpx solid #FF6B6B; }
+.quadrant-cell.important { border-top: 6rpx solid #7C5CFC; }
+.quadrant-cell.urgent { border-top: 6rpx solid #FF6B9D; }
+.quadrant-cell.normal { border-top: 6rpx solid #06D6A0; }
 
 .quadrant-label {
   font-size: 26rpx;
@@ -135,9 +153,7 @@
   border-bottom: 1rpx solid rgba(124, 92, 252, 0.06);
 }
 
-.quadrant-task:last-child {
-  border-bottom: none;
-}
+.quadrant-task:last-child { border-bottom: none; }
 
 .quadrant-task-title {
   font-size: 24rpx;
@@ -157,4 +173,13 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-left: 8rpx;
+}
+
+.quadrant-empty {
+  padding: 20rpx 0;
+}
+
+.quadrant-empty-text {
+  font-size: 22rpx;
+  color: var(--color-text-light);
 }

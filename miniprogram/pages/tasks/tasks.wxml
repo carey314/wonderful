@@ -1,4 +1,4 @@
-<!-- 任务卡片列表页 -->
+<!-- 任务卡片列表页 - V2 -->
 <view class="container tasks-page">
 
   <!-- 视图切换：列表 / 四象限 -->
@@ -19,39 +19,45 @@
     </view>
   </view>
 
-  <!-- 筛选标签 -->
-  <scroll-view class="filter-scroll" scroll-x enable-flex>
-    <view
-      wx:for="{{filters}}"
-      wx:key="value"
-      class="filter-tag {{activeFilter === item.value ? 'active' : ''}}"
-      bindtap="onFilterTap"
-      data-filter="{{item.value}}"
-    >
-      {{item.label}}
+  <!-- 项目筛选标签 -->
+  <scroll-view class="filter-scroll" scroll-x>
+    <view class="filter-inner">
+      <view
+        class="filter-chip {{activeFilter === item.key ? 'active' : ''}}"
+        wx:for="{{projectFilters}}"
+        wx:key="key"
+        bindtap="onFilterTap"
+        data-key="{{item.key}}"
+        style="{{activeFilter === item.key ? 'background:' + item.color + '; color: #fff;' : 'color:' + item.color + ';'}}"
+      >
+        <text>{{item.icon}} {{item.label}}</text>
+        <text class="filter-count">{{item.count}}</text>
+      </view>
     </view>
   </scroll-view>
 
   <!-- 列表视图 -->
   <view wx:if="{{viewMode === 'list'}}" class="task-list">
-    <!-- 进行中的任务 -->
-    <view class="task-group" wx:if="{{pendingTasks.length > 0}}">
-      <view class="group-title">进行中 ({{pendingTasks.length}})</view>
+    <!-- 进行中 -->
+    <view class="task-group" wx:if="{{filteredPending.length > 0}}">
+      <view class="group-title">进行中 ({{filteredPending.length}})</view>
       <task-card
-        wx:for="{{pendingTasks}}"
+        wx:for="{{filteredPending}}"
         wx:key="id"
         task="{{item}}"
         mode="detail"
         bind:complete="onTaskComplete"
+        bind:skip="onTaskSkip"
         bind:tap="onTaskDetail"
+        bind:subtaskToggle="onSubtaskToggle"
       />
     </view>
 
-    <!-- 已完成的任务 -->
-    <view class="task-group" wx:if="{{completedTasks.length > 0}}">
-      <view class="group-title text-secondary">已完成 ({{completedTasks.length}})</view>
+    <!-- 已完成 -->
+    <view class="task-group" wx:if="{{filteredCompleted.length > 0}}">
+      <view class="group-title text-secondary">已完成 ({{filteredCompleted.length}})</view>
       <task-card
-        wx:for="{{completedTasks}}"
+        wx:for="{{filteredCompleted}}"
         wx:key="id"
         task="{{item}}"
         mode="detail"
@@ -60,12 +66,11 @@
     </view>
 
     <!-- 空状态 -->
-    <empty-state
-      wx:if="{{pendingTasks.length === 0 && completedTasks.length === 0}}"
-      icon="📋"
-      title="还没有任务卡片"
-      subtitle="点下面的按钮创建你的第一个目标"
-    />
+    <view class="empty-state" wx:if="{{filteredPending.length === 0 && filteredCompleted.length === 0}}">
+      <text class="empty-emoji">📋</text>
+      <text class="empty-text">还没有任务卡片</text>
+      <text class="empty-hint">点下面的按钮创建第一个目标</text>
+    </view>
   </view>
 
   <!-- 四象限视图 -->
@@ -85,6 +90,9 @@
           <text class="quadrant-task-title">{{item.title}}</text>
           <text class="quadrant-task-coin">+{{item.coinReward}}</text>
         </view>
+        <view class="quadrant-empty" wx:if="{{quadrantTasks.urgentImportant.length === 0}}">
+          <text class="quadrant-empty-text">暂无</text>
+        </view>
       </view>
 
       <!-- 重要不紧急 -->
@@ -100,6 +108,9 @@
         >
           <text class="quadrant-task-title">{{item.title}}</text>
           <text class="quadrant-task-coin">+{{item.coinReward}}</text>
+        </view>
+        <view class="quadrant-empty" wx:if="{{quadrantTasks.important.length === 0}}">
+          <text class="quadrant-empty-text">暂无</text>
         </view>
       </view>
 
@@ -117,6 +128,9 @@
           <text class="quadrant-task-title">{{item.title}}</text>
           <text class="quadrant-task-coin">+{{item.coinReward}}</text>
         </view>
+        <view class="quadrant-empty" wx:if="{{quadrantTasks.urgent.length === 0}}">
+          <text class="quadrant-empty-text">暂无</text>
+        </view>
       </view>
 
       <!-- 不紧急不重要 -->
@@ -133,9 +147,11 @@
           <text class="quadrant-task-title">{{item.title}}</text>
           <text class="quadrant-task-coin">+{{item.coinReward}}</text>
         </view>
+        <view class="quadrant-empty" wx:if="{{quadrantTasks.normal.length === 0}}">
+          <text class="quadrant-empty-text">暂无</text>
+        </view>
       </view>
     </view>
   </view>
-
 
 </view>

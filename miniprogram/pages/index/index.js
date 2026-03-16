@@ -1,6 +1,11 @@
-// 首页 - AI 对话界面（年轻化版本）
-const api = require('../../utils/api')
-const { getGreeting, getWeekday, formatCoins } = require('../../utils/util')
+// 首页 - V2 任务优先 + 自然语言创建
+const { getGreeting, getWeekday, formatCoins, formatDeadline } = require('../../utils/util')
+const { parseInput } = require('../../utils/task-parser')
+const {
+  createTask, createSubtask, getTaskProgress, getDailyCapacity,
+  formatMinutes, getProjectInfo, smartSort, toggleSubtask,
+  PROJECT_PRESETS, getTotalEstimatedMinutes,
+} = require('../../utils/task-model')
 
 Page({
   data: {
@@ -9,14 +14,23 @@ Page({
     dateStr: '',
     coins: 0,
     streakDays: 0,
-    messages: [],
-    todayTasks: [],       // 待完成
-    completedTasks: [],   // 已归档
-    actionButtons: [],
-    showActions: false,
+    // 任务数据
+    todayTasks: [],
+    completedTasks: [],
     showDoneList: false,
+    // 今日容量
+    capacityText: '',
+    capacityPercent: 0,
+    capacityOverloaded: false,
+    // 项目筛选
+    projectFilters: [],
+    activeFilter: 'all',
+    filteredTasks: [],
+    // 输入 & 解析预览
     inputValue: '',
-    // 情绪签到
+    showPreview: false,
+    previewTasks: [],
+    // 情绪签到 - 压缩为一行
     moodCheckedIn: false,
     selectedMood: '',
     selectedMoodEmoji: '',
@@ -42,7 +56,6 @@ Page({
       dateStr: `${now.getMonth() + 1}月${now.getDate()}日`,
     })
 
-    // 恢复今日已签到状态
     if (savedMood) {
       const moodItem = this.data.moodList.find((m) => m.value === savedMood)
       if (moodItem) {
@@ -77,84 +90,118 @@ Page({
     }
   },
 
-  // Mock 数据
+  // V2 Mock 数据 — 使用 createTask 工厂函数
   loadMockData() {
-    const hour = new Date().getHours()
-    const isMorning = hour < 14
-
-    const morningMessages = [
-      {
-        id: 'msg_1',
-        type: 'ai',
-        content: '昨天你说要整理房间，但一直没动。我猜你可能觉得太麻烦不知道从哪开始？\n\n要不这样——今天就收拾书桌就好，大概 15 分钟的事。收拾完了今天的奶茶钱就出来了 ☕',
-        timestamp: '08:00',
-      },
-    ]
-
-    const eveningMessages = [
-      {
-        id: 'msg_e1',
-        type: 'ai',
-        content: '今天辛苦了 🌙\n\n来看看今天的收获吧——',
-        timestamp: '21:00',
-      },
-    ]
-
-    const todayTasks = [
-      {
-        id: 'task_1',
-        title: '整理书桌',
-        description: '把桌面上的东西归位，大概15分钟',
-        priority: 'important',
-        energy: 'low',
-        estimatedMinutes: 15,
-        coinReward: 30,
-        status: 'pending',
-      },
-      {
-        id: 'task_2',
+    const todayTasks = smartSort([
+      createTask({
+        title: '完成项目方案',
+        description: '客户要的运营方案初稿',
+        priority: 'urgent_important',
+        energy: 'high',
+        estimatedMinutes: 90,
+        project: 'work',
+        deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+        subtasks: [
+          createSubtask({ title: '梳理需求要点', estimatedMinutes: 20 }),
+          createSubtask({ title: '写大纲框架', estimatedMinutes: 30 }),
+          createSubtask({ title: '填充内容细节', estimatedMinutes: 30 }),
+          createSubtask({ title: '排版美化', estimatedMinutes: 10 }),
+        ],
+      }),
+      createTask({
         title: 'Python 第8章',
         description: '看完教程 + 完成3道练习题',
         priority: 'important',
         energy: 'high',
         estimatedMinutes: 45,
-        coinReward: 50,
-        status: 'pending',
-      },
-      {
-        id: 'task_3',
-        title: '回复邮件',
-        description: '回复3封待处理的邮件',
+        project: 'study',
+        subtasks: [
+          createSubtask({ title: '阅读教程内容', estimatedMinutes: 20 }),
+          createSubtask({ title: '完成练习题1', estimatedMinutes: 8 }),
+          createSubtask({ title: '完成练习题2', estimatedMinutes: 8 }),
+          createSubtask({ title: '完成练习题3', estimatedMinutes: 9 }),
+        ],
+      }),
+      createTask({
+        title: '回复客户邮件',
         priority: 'urgent',
         energy: 'low',
         estimatedMinutes: 10,
-        coinReward: 20,
-        status: 'pending',
-      },
-    ]
-
-    const actionButtons = isMorning
-      ? [
-          { label: '就这样', emoji: '👌', action: 'accept', type: 'primary' },
-          { label: '调整一下', emoji: '✏️', action: 'adjust', type: 'secondary' },
-          { label: '今天有别的事', emoji: '💬', action: 'other', type: 'muted' },
-        ]
-      : [
-          { label: '开始复盘', emoji: '📊', action: 'review', type: 'primary' },
-          { label: '今天太累了', emoji: '😴', action: 'skip_review', type: 'muted' },
-        ]
+        project: 'work',
+      }),
+      createTask({
+        title: '整理书桌',
+        description: '把桌面上的东西归位',
+        priority: 'normal',
+        energy: 'low',
+        estimatedMinutes: 15,
+        project: 'life',
+      }),
+      createTask({
+        title: '跑步30分钟',
+        priority: 'normal',
+        energy: 'high',
+        estimatedMinutes: 30,
+        project: 'health',
+      }),
+    ])
 
     this.setData({
-      messages: isMorning ? morningMessages : eveningMessages,
       todayTasks,
-      actionButtons,
-      showActions: true,
       coins: formatCoins(2350),
       streakDays: 23,
     })
+
+    this.updateCapacity(todayTasks)
+    this.updateProjectFilters(todayTasks)
+    this.applyFilter()
   },
 
-  // 任务完成 → 从待办移到已归档
+  // 更新今日容量
+  updateCapacity(tasks) {
+    const cap = getDailyCapacity(tasks, 360) // 建议6h
+    this.setData({
+      capacityText: formatMinutes(cap.scheduledMinutes) + ' / ' + formatMinutes(cap.capacityMinutes),
+      capacityPercent: cap.percentage,
+      capacityOverloaded: cap.overloaded,
+    })
+  },
+
+  // 构建项目筛选标签
+  updateProjectFilters(tasks) {
+    const seen = {}
+    const filters = [{ key: 'all', label: '全部', icon: '📋', color: '#7C5CFC', count: tasks.length }]
+    tasks.forEach((t) => {
+      const p = t.project
+      if (!p || seen[p]) {
+        if (p && seen[p]) seen[p].count++
+        return
+      }
+      const info = getProjectInfo(p)
+      seen[p] = { key: p, label: info.label, icon: info.icon, color: info.color, count: 1 }
+      filters.push(seen[p])
+    })
+    this.setData({ projectFilters: filters })
+  },
+
+  // 应用项目筛选
+  applyFilter() {
+    const key = this.data.activeFilter
+    const tasks = this.data.todayTasks
+    if (key === 'all') {
+      this.setData({ filteredTasks: tasks })
+    } else {
+      this.setData({ filteredTasks: tasks.filter((t) => t.project === key) })
+    }
+  },
+
+  onFilterTap(e) {
+    const key = e.currentTarget.dataset.key
+    this.setData({ activeFilter: key })
+    this.applyFilter()
+  },
+
+  // 任务完成 -> 归档 + 金币
   onTaskComplete(e) {
     const { taskId } = e.detail
     const task = this.data.todayTasks.find((t) => t.id === taskId)
@@ -164,96 +211,103 @@ Page({
     const todayTasks = this.data.todayTasks.filter((t) => t.id !== taskId)
     const completedTasks = [...this.data.completedTasks, { ...task, status: 'completed' }]
 
-    // 更新金币
     const app = getApp()
     app.globalData.coins = (app.globalData.coins || 0) + coinReward
     wx.setStorageSync('coins', app.globalData.coins)
 
-    this.setData({
-      todayTasks,
-      completedTasks,
-      coins: formatCoins(app.globalData.coins),
-    })
+    this.setData({ todayTasks, completedTasks, coins: formatCoins(app.globalData.coins) })
+
+    this.updateCapacity(todayTasks)
+    this.updateProjectFilters(todayTasks)
+    this.applyFilter()
 
     wx.vibrateShort({ type: 'medium' })
     wx.showToast({ title: `+${coinReward} 金币 ✨`, icon: 'none' })
 
-    // 所有任务完成时给个鼓励
     if (todayTasks.length === 0) {
-      setTimeout(() => {
-        this.addAIMessage('今天的任务全部完成了！你太棒了 🎉\n\n奖励自己一下吧，你值得的~')
-      }, 1000)
+      wx.showToast({ title: '今日任务全部完成 🎉', icon: 'none', duration: 2000 })
     }
   },
 
-  // 切换已完成列表显示
+  // 子任务勾选
+  onSubtaskToggle(e) {
+    const { taskId, updatedTask } = e.detail
+    const todayTasks = this.data.todayTasks.map((t) => t.id === taskId ? updatedTask : t)
+    this.setData({ todayTasks })
+    this.updateCapacity(todayTasks)
+    this.applyFilter()
+  },
+
+  // 切换已完成列表
   toggleDoneList() {
     this.setData({ showDoneList: !this.data.showDoneList })
   },
 
-  // 任务跳过（不想做）-> 触发思维转换
+  // 任务跳过
   onTaskSkip(e) {
-    this.addAIMessage('这个任务不想做？没关系，换个角度想想看——\n\n整理书桌不是在"收拾"，是在给自己的大脑腾空间。桌面干净了，脑子也跟着清爽。\n\n要不就 5 分钟？5 分钟做完算你赢 💪')
+    wx.showToast({ title: '换个角度想想看~', icon: 'none' })
   },
 
-  // 操作按钮点击
-  onActionTap(e) {
-    const { action } = e.currentTarget.dataset
-    this.setData({ showActions: false })
-
-    switch (action) {
-      case 'accept':
-        this.addAIMessage('好的！那就按这个来，今天轻松搞定。\n\n建议先从「整理书桌」开始，因为它最快，完成了心情好，后面就顺了 😊')
-        break
-      case 'adjust':
-        this.addAIMessage('好，你想怎么调整？\n\n可以告诉我今天的状态，我帮你重新安排 🤔')
-        break
-      case 'other':
-        this.addAIMessage('没问题！今天有什么事要处理？\n\n跟我说说，我帮你规划一下 📋')
-        break
-      case 'review':
-        this.addAIMessage('来看看今天的成果！\n\n✅ 整理书桌 +30金币\n✅ Python第8章 +50金币\n❌ 回复邮件\n\n"回复邮件"已经连续2天没做了。要不要明天第一个做掉？\n\n今日收获: 80金币 🎉')
-        break
-      case 'skip_review':
-        this.addAIMessage('累了就好好休息，明天又是新的一天。\n\n晚安 🌙 明天见~')
-        break
-    }
-  },
-
-  // 添加 AI 消息
-  addAIMessage(content) {
-    const now = new Date()
-    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-    const messages = [
-      ...this.data.messages,
-      { id: `msg_${Date.now()}`, type: 'ai', content, timestamp },
-    ]
-    this.setData({ messages })
-  },
+  // --- 输入 & 自然语言解析 ---
 
   onInput(e) {
     this.setData({ inputValue: e.detail.value })
   },
 
-  // 发送用户消息
+  // 发送 = 解析输入并弹出预览
   onSendMessage() {
     const content = this.data.inputValue.trim()
     if (!content) return
 
-    const now = new Date()
-    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-    const messages = [
-      ...this.data.messages,
-      { id: `msg_${Date.now()}`, type: 'user', content, timestamp },
-    ]
-    this.setData({ messages, inputValue: '' })
+    const parsed = parseInput(content)
+    if (parsed.length === 0) {
+      wx.showToast({ title: '没有识别到任务', icon: 'none' })
+      return
+    }
 
-    setTimeout(() => {
-      this.addAIMessage('AI 对话功能即将上线，敬请期待 🚀')
-    }, 500)
+    this.setData({
+      previewTasks: parsed,
+      showPreview: true,
+    })
   },
 
-  // 情绪签到
+  // 确认添加解析出的任务
+  onConfirmPreview() {
+    const newTasks = this.data.previewTasks
+    const todayTasks = smartSort([...this.data.todayTasks, ...newTasks])
+
+    this.setData({
+      todayTasks,
+      showPreview: false,
+      previewTasks: [],
+      inputValue: '',
+    })
+
+    this.updateCapacity(todayTasks)
+    this.updateProjectFilters(todayTasks)
+    this.applyFilter()
+
+    wx.showToast({ title: `已添加 ${newTasks.length} 个任务`, icon: 'none' })
+  },
+
+  // 取消预览
+  onCancelPreview() {
+    this.setData({ showPreview: false, previewTasks: [] })
+  },
+
+  // 删除预览中的某个任务
+  onRemovePreviewTask(e) {
+    const idx = e.currentTarget.dataset.index
+    const previewTasks = this.data.previewTasks.filter((_, i) => i !== idx)
+    if (previewTasks.length === 0) {
+      this.setData({ showPreview: false, previewTasks: [] })
+    } else {
+      this.setData({ previewTasks })
+    }
+  },
+
+  // --- 情绪签到 ---
+
   onMoodTap(e) {
     const { value, emoji, label } = e.currentTarget.dataset
     const now = new Date()
@@ -269,28 +323,25 @@ Page({
       selectedMoodLabel: label,
     })
 
-    // 根据心情调整任务推荐和 AI 回复
-    const moodResponses = {
-      great: '今天状态超棒！趁着好心情，来挑战一个高能量任务吧 💪',
-      good: '状态不错呢，保持节奏，今天一定很顺利 😊',
-      normal: '平平淡淡也是一天，做一件小事让自己开心一下？🌱',
-      low: '有点低落没关系，今天对自己温柔一点。先从最简单的任务开始 🤗',
-      angry: '烦躁的时候做点整理类的事情，动动手反而能平静下来 🧹',
-      stressed: '压力大的时候，先深呼吸三次。今天只做最重要的一件事就好 🌙',
-    }
-
-    // 低能量心情 → 调整任务排序，把低能量任务前置
+    // 低能量心情 -> 低能量任务前置
     if (['low', 'angry', 'stressed'].includes(value)) {
       const sorted = [...this.data.todayTasks].sort((a, b) => {
         const order = { low: 0, medium: 1, high: 2 }
         return (order[a.energy] || 1) - (order[b.energy] || 1)
       })
       this.setData({ todayTasks: sorted })
+      this.applyFilter()
     }
 
-    setTimeout(() => {
-      this.addAIMessage(moodResponses[value] || '记录好啦，今天也要加油哦~')
-    }, 500)
+    const moodResponses = {
+      great: '状态超棒！来挑战高能量任务吧 💪',
+      good: '状态不错，保持节奏 😊',
+      normal: '做一件小事让自己开心一下 🌱',
+      low: '今天对自己温柔一点，先从简单的开始 🤗',
+      angry: '动动手做点整理，反而能平静下来 🧹',
+      stressed: '先深呼吸，今天只做最重要的一件事 🌙',
+    }
+    wx.showToast({ title: moodResponses[value] || '记录好啦~', icon: 'none', duration: 2000 })
   },
 
   goToProfile() {

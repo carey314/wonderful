@@ -1,4 +1,4 @@
-/* 任务卡片 - 玻璃拟态版 */
+/* 任务卡片 - V2 玻璃拟态版 */
 .task-card {
   position: relative;
   background: rgba(255, 255, 255, 0.55);
@@ -19,6 +19,21 @@
   opacity: 0.55;
 }
 
+.task-card.overdue {
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+/* 项目颜色标签 - 左侧色条 */
+.project-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8rpx;
+  border-radius: 28rpx 0 0 28rpx;
+  z-index: 2;
+}
+
 /* 装饰性渐变圆 */
 .deco-circle {
   position: absolute;
@@ -35,6 +50,10 @@
   position: relative;
   padding: 28rpx 32rpx;
   z-index: 1;
+}
+
+.card-body.has-stripe {
+  padding-left: 40rpx;
 }
 
 /* 头部 */
@@ -56,6 +75,14 @@
   font-size: 22rpx;
   font-weight: 600;
   letter-spacing: 1rpx;
+}
+
+.project-tag {
+  font-size: 20rpx;
+  font-weight: 500;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  margin-left: 12rpx;
 }
 
 .spacer {
@@ -125,7 +152,7 @@
 .progress-bar {
   height: 100%;
   border-radius: 7rpx;
-  background: linear-gradient(90deg, #7C5CFC, #A78BFA);
+  background: linear-gradient(90deg, #7C5CFC, #A78BFA, #EC4899);
   position: relative;
   transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -147,6 +174,105 @@
   margin-left: 16rpx;
   min-width: 64rpx;
   text-align: right;
+}
+
+/* 子任务展开/折叠 */
+.subtask-toggle {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  padding: 8rpx 0;
+}
+
+.subtask-toggle-icon {
+  font-size: 22rpx;
+  color: #7C5CFC;
+  margin-right: 8rpx;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.subtask-toggle-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.subtask-toggle-text {
+  font-size: 24rpx;
+  color: #7C5CFC;
+  font-weight: 500;
+}
+
+/* 子任务列表 - 展开动画 */
+.subtask-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.subtask-list.show {
+  max-height: 1000rpx;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0 14rpx 8rpx;
+  border-bottom: 1rpx solid rgba(124, 92, 252, 0.04);
+  transition: opacity 0.2s ease;
+}
+
+.subtask-item:last-child {
+  border-bottom: none;
+}
+
+/* 子任务勾选框 */
+.subtask-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(124, 92, 252, 0.3);
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.subtask-checkbox.checked {
+  background: linear-gradient(135deg, #7C5CFC, #A78BFA);
+  border-color: transparent;
+  transform: scale(1.1);
+}
+
+.subtask-check-icon {
+  font-size: 20rpx;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.subtask-title {
+  flex: 1;
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+.subtask-title-done {
+  text-decoration: line-through;
+  color: #A5A5C0;
+}
+
+.subtask-time {
+  font-size: 20rpx;
+  color: #A5A5C0;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+.subtask-done {
+  opacity: 0.6;
 }
 
 /* 标签行 */
@@ -173,6 +299,12 @@
 .info-tag.due {
   color: #A5A5C0;
   background: transparent;
+}
+
+.info-tag.due-overdue {
+  color: #FF6B6B;
+  font-weight: 600;
+  background: rgba(255, 107, 107, 0.08);
 }
 
 /* 操作按钮 */

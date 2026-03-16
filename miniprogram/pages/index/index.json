@@ -1,7 +1,6 @@
 {
   "navigationBarTitleText": "Wonderful",
   "usingComponents": {
-    "chat-bubble": "/components/chat-bubble/chat-bubble",
     "task-card": "/components/task-card/task-card"
   }
 }

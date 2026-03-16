@@ -1,10 +1,16 @@
-<!-- 任务卡片组件 - 玻璃拟态版 -->
-<view class="task-card {{completed ? 'completed' : ''}}" bindtap="onTap">
-  <view class="card-body">
-    <!-- 顶部：优先级 + 金币奖励 -->
+<!-- 任务卡片组件 - V2 玻璃拟态版 -->
+<view class="task-card {{completed ? 'completed' : ''}} {{overdue ? 'overdue' : ''}}" bindtap="onTap">
+  <!-- 项目颜色标签 - 左侧色条 -->
+  <view class="project-stripe" wx:if="{{projectInfo}}" style="background: {{projectInfo.color}}"></view>
+
+  <view class="card-body {{projectInfo ? 'has-stripe' : ''}}">
+    <!-- 顶部：优先级 + 项目标签 + 金币奖励 -->
     <view class="card-header">
       <view class="priority-dot" style="background: {{priorityColor}}"></view>
       <text class="priority-label" style="color: {{priorityColor}}">{{priorityLabel}}</text>
+      <view class="project-tag" wx:if="{{projectInfo}}" style="background: {{projectInfo.color}}20; color: {{projectInfo.color}}">
+        <text>{{projectInfo.icon}} {{projectInfo.label}}</text>
+      </view>
       <view class="spacer"></view>
       <view class="coin-chip">
         <text class="coin-text">+{{task.coinReward}}</text>
@@ -16,20 +22,42 @@
     <text class="task-title {{completed ? 'done' : ''}}">{{task.title}}</text>
     <text class="task-desc" wx:if="{{task.description}}">{{task.description}}</text>
 
-    <!-- 进度条 -->
-    <view class="progress-row" wx:if="{{task.progress > 0 && !completed}}">
+    <!-- 进度条 - 有子任务时根据完成情况显示 -->
+    <view class="progress-row" wx:if="{{hasSubtasks && !completed}}">
       <view class="progress-track">
-        <view class="progress-bar" style="width: {{task.progress}}%">
+        <view class="progress-bar" style="width: {{progress}}%">
           <view class="progress-glow"></view>
         </view>
       </view>
-      <text class="progress-pct">{{task.progress}}%</text>
+      <text class="progress-pct">{{subtaskCountText}}</text>
+    </view>
+
+    <!-- 子任务展开/折叠区域 -->
+    <view class="subtask-toggle" wx:if="{{hasSubtasks}}" catchtap="toggleExpand">
+      <text class="subtask-toggle-icon {{expanded ? 'expanded' : ''}}">▸</text>
+      <text class="subtask-toggle-text">子任务 {{subtaskCountText}}</text>
+    </view>
+
+    <view class="subtask-list {{expanded ? 'show' : ''}}">
+      <view
+        class="subtask-item {{item.completed ? 'subtask-done' : ''}}"
+        wx:for="{{task.subtasks}}"
+        wx:key="id"
+        catchtap="onToggleSubtask"
+        data-id="{{item.id}}"
+      >
+        <view class="subtask-checkbox {{item.completed ? 'checked' : ''}}">
+          <view class="subtask-check-icon" wx:if="{{item.completed}}">✓</view>
+        </view>
+        <text class="subtask-title {{item.completed ? 'subtask-title-done' : ''}}">{{item.title}}</text>
+        <text class="subtask-time" wx:if="{{item.estimatedMinutes > 0}}">{{item.estimatedMinutes}}min</text>
+      </view>
     </view>
 
     <!-- 底部标签 -->
     <view class="tag-row">
-      <view class="info-tag" wx:if="{{task.estimatedMinutes}}">
-        <text>⏱ {{task.estimatedMinutes}}min</text>
+      <view class="info-tag time-tag" wx:if="{{estimatedTimeText}}">
+        <text>⏱ {{estimatedTimeText}}</text>
       </view>
       <view class="info-tag energy" wx:if="{{task.energy}}" style="color: {{energyColor}}">
         <text>{{energyLabel}}</text>
@@ -38,8 +66,8 @@
         <text>🔥 {{task.streakDays}}天</text>
       </view>
       <view class="spacer"></view>
-      <view class="info-tag due" wx:if="{{task.dueDate}}">
-        <text>{{task.dueDate}}</text>
+      <view class="info-tag due {{overdue ? 'due-overdue' : ''}}" wx:if="{{deadlineText}}">
+        <text>📅 {{deadlineText}}</text>
       </view>
     </view>
 

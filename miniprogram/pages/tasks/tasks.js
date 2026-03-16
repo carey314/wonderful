@@ -1,20 +1,24 @@
-// 任务卡片列表页
-const { priorityMap } = require('../../utils/util')
+// 任务卡片列表页 - V2 升级版
+const {
+  createTask, createSubtask, smartSort, getProjectInfo,
+  toggleSubtask, PROJECT_PRESETS,
+} = require('../../utils/task-model')
+
+const projectKeys = Object.keys(PROJECT_PRESETS)
 
 Page({
   data: {
     viewMode: 'list', // list | quadrant
+    // 项目筛选
     activeFilter: 'all',
-    filters: [
-      { label: '全部', value: 'all' },
-      { label: '今日', value: 'today' },
-      { label: '本周', value: 'week' },
-      { label: '长期目标', value: 'longterm' },
-      { label: '自我提升', value: 'growth' },
-      { label: '工作', value: 'work' },
-    ],
+    projectFilters: [],
+    // 任务数据
+    allTasks: [],
     pendingTasks: [],
     completedTasks: [],
+    filteredPending: [],
+    filteredCompleted: [],
+    // 四象限
     quadrantTasks: {
       urgentImportant: [],
       important: [],
@@ -34,121 +38,158 @@ Page({
   // 加载任务数据
   loadTasks() {
     // TODO: 对接后端 API，目前使用 mock 数据
-    const allTasks = [
-      {
-        id: '1',
+    const allTasks = smartSort([
+      createTask({
         title: '学完 Python 基础课程',
         description: '第8章 + 3道练习题',
         priority: 'important',
         energy: 'high',
         estimatedMinutes: 45,
-        coinReward: 50,
-        status: 'pending',
-        category: 'growth',
-        progress: 78,
-        streakDays: 12,
-        dueDate: '3月31日',
-      },
-      {
-        id: '2',
+        project: 'study',
+        subtasks: [
+          createSubtask({ title: '阅读教程内容', estimatedMinutes: 20, completed: true }),
+          createSubtask({ title: '完成练习题1', estimatedMinutes: 8, completed: true }),
+          createSubtask({ title: '完成练习题2', estimatedMinutes: 8 }),
+          createSubtask({ title: '完成练习题3', estimatedMinutes: 9 }),
+        ],
+      }),
+      createTask({
         title: '写完项目方案书',
         description: '标题+三个要点，先不管格式',
         priority: 'urgent_important',
         energy: 'high',
         estimatedMinutes: 60,
-        coinReward: 85,
-        status: 'pending',
-        category: 'work',
-        progress: 30,
-        dueDate: '明天',
-      },
-      {
-        id: '3',
+        project: 'work',
+        deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+        subtasks: [
+          createSubtask({ title: '梳理需求要点', estimatedMinutes: 15 }),
+          createSubtask({ title: '写大纲框架', estimatedMinutes: 20 }),
+          createSubtask({ title: '填充内容', estimatedMinutes: 25 }),
+        ],
+      }),
+      createTask({
         title: '回复3封邮件',
         description: '待处理的客户邮件',
         priority: 'urgent',
         energy: 'low',
         estimatedMinutes: 15,
-        coinReward: 20,
-        status: 'pending',
-        category: 'work',
-      },
-      {
-        id: '4',
+        project: 'work',
+      }),
+      createTask({
         title: '每天跑步30分钟',
         description: '今天至少跑2公里',
         priority: 'normal',
         energy: 'medium',
         estimatedMinutes: 30,
-        coinReward: 35,
-        status: 'pending',
-        category: 'health',
-        streakDays: 5,
-      },
-      {
-        id: '5',
+        project: 'health',
+      }),
+      createTask({
         title: '整理书桌',
         description: '清理桌面，物品归位',
         priority: 'normal',
         energy: 'low',
         estimatedMinutes: 15,
-        coinReward: 30,
+        project: 'life',
         status: 'completed',
-        category: 'life',
-      },
-    ]
+      }),
+    ])
 
-    const pendingTasks = allTasks.filter((t) => t.status === 'pending')
-    const completedTasks = allTasks.filter((t) => t.status === 'completed')
+    this.setData({ allTasks })
+    this.refreshViews()
+  },
 
-    // 按四象限分类
+  // 刷新所有视图数据
+  refreshViews() {
+    const allTasks = this.data.allTasks
+    const pendingTasks = allTasks.filter((t) => t.status !== 'completed' && t.status !== 'archived')
+    const completedTasks = allTasks.filter((t) => t.status === 'completed' || t.status === 'archived')
+
+    // 四象限
     const quadrantTasks = {
-      urgentImportant: allTasks.filter((t) => t.priority === 'urgent_important' && t.status === 'pending'),
-      important: allTasks.filter((t) => t.priority === 'important' && t.status === 'pending'),
-      urgent: allTasks.filter((t) => t.priority === 'urgent' && t.status === 'pending'),
-      normal: allTasks.filter((t) => t.priority === 'normal' && t.status === 'pending'),
+      urgentImportant: pendingTasks.filter((t) => t.priority === 'urgent_important'),
+      important: pendingTasks.filter((t) => t.priority === 'important'),
+      urgent: pendingTasks.filter((t) => t.priority === 'urgent'),
+      normal: pendingTasks.filter((t) => t.priority === 'normal'),
     }
 
-    this.setData({ pendingTasks, completedTasks, quadrantTasks })
+    // 项目筛选标签
+    const seen = {}
+    const filters = [{ key: 'all', label: '全部', icon: '📋', color: '#7C5CFC', count: pendingTasks.length }]
+    pendingTasks.forEach((t) => {
+      const p = t.project
+      if (!p) return
+      if (seen[p]) { seen[p].count++; return }
+      const info = getProjectInfo(p)
+      seen[p] = { key: p, label: info.label, icon: info.icon, color: info.color, count: 1 }
+      filters.push(seen[p])
+    })
+
+    this.setData({ pendingTasks, completedTasks, quadrantTasks, projectFilters: filters })
+    this.applyFilter()
+  },
+
+  // 应用项目筛选
+  applyFilter() {
+    const key = this.data.activeFilter
+    const pending = this.data.pendingTasks
+    const completed = this.data.completedTasks
+    if (key === 'all') {
+      this.setData({ filteredPending: pending, filteredCompleted: completed })
+    } else {
+      this.setData({
+        filteredPending: pending.filter((t) => t.project === key),
+        filteredCompleted: completed.filter((t) => t.project === key),
+      })
+    }
   },
 
   // 切换视图模式
   switchView(e) {
-    const mode = e.currentTarget.dataset.mode
-    this.setData({ viewMode: mode })
+    this.setData({ viewMode: e.currentTarget.dataset.mode })
   },
 
   // 筛选标签点击
   onFilterTap(e) {
-    const filter = e.currentTarget.dataset.filter
-    this.setData({ activeFilter: filter })
-    // TODO: 根据筛选条件重新加载数据
+    this.setData({ activeFilter: e.currentTarget.dataset.key })
+    this.applyFilter()
   },
 
   // 任务完成
   onTaskComplete(e) {
     const { taskId } = e.detail
-    const task = this.data.pendingTasks.find((t) => t.id === taskId)
-    if (!task) return
+    const allTasks = this.data.allTasks.map((t) => {
+      if (t.id === taskId) return Object.assign({}, t, { status: 'completed' })
+      return t
+    })
+    this.setData({ allTasks })
+    this.refreshViews()
 
-    const pendingTasks = this.data.pendingTasks.filter((t) => t.id !== taskId)
-    const completedTasks = [...this.data.completedTasks, { ...task, status: 'completed' }]
-    this.setData({ pendingTasks, completedTasks })
-
+    const task = allTasks.find((t) => t.id === taskId)
     wx.vibrateShort({ type: 'medium' })
-    wx.showToast({ title: `+${task.coinReward} 金币 🎉`, icon: 'none' })
+    wx.showToast({ title: `+${task ? task.coinReward : 0} 金币`, icon: 'none' })
+  },
+
+  // 子任务勾选
+  onSubtaskToggle(e) {
+    const { taskId, updatedTask } = e.detail
+    const allTasks = this.data.allTasks.map((t) => t.id === taskId ? updatedTask : t)
+    this.setData({ allTasks })
+    this.refreshViews()
+  },
+
+  // 跳过
+  onTaskSkip(e) {
+    wx.showToast({ title: '换个角度想想~', icon: 'none' })
   },
 
   // 点击任务详情
   onTaskDetail(e) {
-    const id = e.detail?.taskId || e.currentTarget.dataset.id
-    // TODO: 跳转到任务详情页
+    const id = e.detail && e.detail.taskId ? e.detail.taskId : e.currentTarget.dataset.id
     wx.showToast({ title: '任务详情开发中', icon: 'none' })
   },
 
   // 添加新任务
   onAddTask() {
-    // TODO: 跳转到创建任务页面
-    wx.showToast({ title: '创建任务开发中', icon: 'none' })
+    wx.navigateTo({ url: '/pages/add-task/add-task' })
   },
 })
