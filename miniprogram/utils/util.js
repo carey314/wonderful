@@ -110,6 +110,18 @@ const energyMap = {
   low: { label: '低能量', color: '#06D6A0' },
 }
 
+/**
+ * 获取导航栏安全区域顶部间距（状态栏 + 胶囊按钮）
+ */
+function getNavPaddingTop() {
+  try {
+    var menuRect = wx.getMenuButtonBoundingClientRect()
+    return menuRect.bottom + 12
+  } catch (e) {
+    return 120
+  }
+}
+
 module.exports = {
   formatDate,
   formatDeadline,
@@ -117,6 +129,7 @@ module.exports = {
   getGreeting,
   getWeekday,
   formatCoins,
+  getNavPaddingTop,
   priorityMap,
   energyMap,
 }

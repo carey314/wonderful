@@ -3,9 +3,10 @@ Wonderful Pydantic 数据模型
 用于请求/响应的数据校验
 """
 
+import json
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ============================================
@@ -41,59 +42,168 @@ class UserSettingsUpdate(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    """登录返回 token"""
-    access_token: str
-    token_type: str = "bearer"
+    """登录返回 token — 同时返回 token 和 access_token 兼容新旧前端"""
+    token: str
+    access_token: str = ""  # 兼容旧前端 app.js 读 access_token
     user: UserProfile
 
+    @model_validator(mode="before")
+    @classmethod
+    def sync_token_fields(cls, data):
+        if isinstance(data, dict):
+            # 保证 token 和 access_token 同步
+            if "token" in data and not data.get("access_token"):
+                data["access_token"] = data["token"]
+            elif "access_token" in data and not data.get("token"):
+                data["token"] = data["access_token"]
+        return data
+
 
 # ============================================
-# 卡片/任务相关
+# 卡片/任务相关 — V2 数据模型
 # ============================================
+
+class SubtaskItem(BaseModel):
+    """子任务"""
+    id: str = ""
+    title: str = ""
+    completed: bool = False
+    estimatedMinutes: int = 0
+
 
 class CardCreate(BaseModel):
-    """创建卡片"""
+    """创建卡片 — V2：接收前端 camelCase 字段"""
     title: str = Field(..., min_length=1, max_length=200)
     description: str = Field(default="", max_length=2000)
-    priority: str = Field(default="seed")  # firefighter, sniper, seed, recycle
+    priority: str = Field(default="normal")  # urgent_important, important, urgent, normal
     card_type: str = Field(default="daily")  # vision, goal, daily
     category: str = Field(default="")
-    due_date: Optional[str] = None  # YYYY-MM-DD
+    project: str = Field(default="")
+    due_date: Optional[str] = Field(default=None, alias="deadline")  # 前端用 deadline
     parent_card_id: Optional[int] = None
-    estimated_minutes: int = Field(default=30, ge=1, le=480)
-    coin_reward: int = Field(default=10, ge=1, le=1000)
+    estimatedMinutes: int = Field(default=30, ge=1, le=480)
+    coinReward: int = Field(default=0, ge=0, le=10000)
+    isUrgent: bool = Field(default=False)
+    isImportant: bool = Field(default=False)
+    energy: str = Field(default="medium")  # high, medium, low
+    subtasks: list[SubtaskItem] = Field(default_factory=list)
+    status: str = Field(default="pending")
+
+    model_config = {"populate_by_name": True}
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        """兼容前端 camelCase 和后端 snake_case"""
+        if isinstance(data, dict):
+            # deadline -> due_date
+            if "deadline" in data and "due_date" not in data:
+                data["due_date"] = data.pop("deadline")
+            # 也接受 due_date 直接传入
+            # estimated_minutes -> estimatedMinutes
+            if "estimated_minutes" in data and "estimatedMinutes" not in data:
+                data["estimatedMinutes"] = data.pop("estimated_minutes")
+            if "coin_reward" in data and "coinReward" not in data:
+                data["coinReward"] = data.pop("coin_reward")
+            if "is_urgent" in data and "isUrgent" not in data:
+                data["isUrgent"] = data.pop("is_urgent")
+            if "is_important" in data and "isImportant" not in data:
+                data["isImportant"] = data.pop("is_important")
+        return data
 
 
 class CardUpdate(BaseModel):
-    """更新卡片"""
+    """更新卡片 — V2"""
     title: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None, max_length=2000)
     priority: Optional[str] = None
-    status: Optional[str] = None  # active, completed, paused, archived
+    status: Optional[str] = None  # pending, in_progress, completed, archived
     category: Optional[str] = None
+    project: Optional[str] = None
     due_date: Optional[str] = None
-    estimated_minutes: Optional[int] = Field(default=None, ge=1, le=480)
-    coin_reward: Optional[int] = Field(default=None, ge=1, le=1000)
+    estimatedMinutes: Optional[int] = Field(default=None, ge=1, le=480)
+    coinReward: Optional[int] = Field(default=None, ge=0, le=10000)
+    isUrgent: Optional[bool] = None
+    isImportant: Optional[bool] = None
+    energy: Optional[str] = None
+    subtasks: Optional[list[SubtaskItem]] = None
     progress: Optional[int] = Field(default=None, ge=0, le=100)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_fields(cls, data):
+        if isinstance(data, dict):
+            if "deadline" in data and "due_date" not in data:
+                data["due_date"] = data.pop("deadline")
+            if "estimated_minutes" in data and "estimatedMinutes" not in data:
+                data["estimatedMinutes"] = data.pop("estimated_minutes")
+            if "coin_reward" in data and "coinReward" not in data:
+                data["coinReward"] = data.pop("coin_reward")
+            if "is_urgent" in data and "isUrgent" not in data:
+                data["isUrgent"] = data.pop("is_urgent")
+            if "is_important" in data and "isImportant" not in data:
+                data["isImportant"] = data.pop("is_important")
+        return data
 
 
 class CardResponse(BaseModel):
-    """卡片响应"""
+    """卡片响应 — V2：返回 camelCase 给前端"""
     id: int
     title: str
     description: str
     priority: str
     status: str
-    card_type: str
-    category: str
-    due_date: str
-    parent_card_id: Optional[int]
-    estimated_minutes: int
-    coin_reward: int
-    progress: int
-    postponed_count: int
-    created_at: str
-    completed_at: Optional[str]
+    cardType: str = ""
+    category: str = ""
+    project: str = ""
+    deadline: str = ""       # 前端用 deadline（对应 DB due_date）
+    parentCardId: Optional[int] = None
+    estimatedMinutes: int = 30
+    coinReward: int = 0
+    isUrgent: bool = False
+    isImportant: bool = False
+    energy: str = "medium"
+    subtasks: list = Field(default_factory=list)
+    progress: int = 0
+    postponedCount: int = 0
+    createdAt: str = ""
+    completedAt: Optional[str] = None
+    updatedAt: str = ""
+
+
+def row_to_card_response(row: dict) -> CardResponse:
+    """将数据库行 (snake_case) 转换为 V2 CardResponse (camelCase)"""
+    subtasks = []
+    raw = row.get("subtasks_json", "[]")
+    if raw:
+        try:
+            subtasks = json.loads(raw) if isinstance(raw, str) else raw
+        except (json.JSONDecodeError, TypeError):
+            subtasks = []
+
+    return CardResponse(
+        id=row["id"],
+        title=row["title"],
+        description=row.get("description", ""),
+        priority=row.get("priority", "normal"),
+        status=row.get("status", "pending"),
+        cardType=row.get("card_type", "daily"),
+        category=row.get("category", ""),
+        project=row.get("project", ""),
+        deadline=row.get("due_date", ""),
+        parentCardId=row.get("parent_card_id"),
+        estimatedMinutes=row.get("estimated_minutes", 30),
+        coinReward=row.get("coin_reward", 0),
+        isUrgent=bool(row.get("is_urgent", 0)),
+        isImportant=bool(row.get("is_important", 0)),
+        energy=row.get("energy", "medium"),
+        subtasks=subtasks,
+        progress=row.get("progress", 0),
+        postponedCount=row.get("postponed_count", 0),
+        createdAt=row.get("created_at", ""),
+        completedAt=row.get("completed_at"),
+        updatedAt=row.get("updated_at", ""),
+    )
 
 
 # ============================================

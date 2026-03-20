@@ -1,4 +1,5 @@
-/* 任务卡片 - V2 玻璃拟态版 */
+/* 任务卡片 - V3 子任务直接可见 + 紧凑操作 */
+
 .task-card {
   position: relative;
   background: rgba(255, 255, 255, 0.55);
@@ -11,36 +12,22 @@
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.task-card:active {
-  transform: scale(0.97);
-}
+.task-card:active { transform: scale(0.97); }
+.task-card.completed { opacity: 0.55; }
+.task-card.overdue { border-color: rgba(255, 107, 107, 0.3); }
 
-.task-card.completed {
-  opacity: 0.55;
-}
-
-.task-card.overdue {
-  border-color: rgba(255, 107, 107, 0.3);
-}
-
-/* 项目颜色标签 - 左侧色条 */
 .project-stripe {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
+  left: 0; top: 0; bottom: 0;
   width: 8rpx;
   border-radius: 28rpx 0 0 28rpx;
   z-index: 2;
 }
 
-/* 装饰性渐变圆 */
 .deco-circle {
   position: absolute;
-  top: -40rpx;
-  right: -40rpx;
-  width: 120rpx;
-  height: 120rpx;
+  top: -40rpx; right: -40rpx;
+  width: 120rpx; height: 120rpx;
   border-radius: 50%;
   opacity: 0.07;
   pointer-events: none;
@@ -48,27 +35,24 @@
 
 .card-body {
   position: relative;
-  padding: 28rpx 32rpx;
+  padding: 24rpx 28rpx;
   z-index: 1;
 }
 
-.card-body.has-stripe {
-  padding-left: 40rpx;
-}
+.card-body.has-stripe { padding-left: 36rpx; }
 
-/* 头部 */
+/* ====== 头部 ====== */
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
+  margin-bottom: 10rpx;
 }
 
 .priority-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 14rpx; height: 14rpx;
   border-radius: 50%;
-  margin-right: 12rpx;
-  box-shadow: 0 0 12rpx currentColor;
+  margin-right: 10rpx;
+  box-shadow: 0 0 10rpx currentColor;
 }
 
 .priority-label {
@@ -85,20 +69,18 @@
   margin-left: 12rpx;
 }
 
-.spacer {
-  flex: 1;
-}
+.spacer { flex: 1; }
 
 .coin-chip {
   display: flex;
   align-items: center;
-  padding: 6rpx 18rpx;
+  padding: 4rpx 14rpx;
   border-radius: 32rpx;
   background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(255,107,157,0.08));
 }
 
 .coin-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 700;
   background: linear-gradient(135deg, #D97706, #FBBF24);
   -webkit-background-clip: text;
@@ -106,18 +88,15 @@
   background-clip: text;
 }
 
-.coin-spark {
-  font-size: 18rpx;
-  margin-left: 4rpx;
-}
+.coin-spark { font-size: 16rpx; margin-left: 4rpx; }
 
-/* 标题 */
+/* ====== 标题 ====== */
 .task-title {
   display: block;
   font-size: 32rpx;
   font-weight: 700;
   color: #1E1B4B;
-  line-height: 1.5;
+  line-height: 1.4;
   letter-spacing: -0.5rpx;
 }
 
@@ -126,236 +105,158 @@
   color: #A5A5C0;
 }
 
-.task-desc {
-  display: block;
-  font-size: 24rpx;
-  color: #6B7280;
-  margin-top: 8rpx;
-  line-height: 1.6;
+/* ====== 子任务直接可见 ====== */
+.subtask-face {
+  margin-top: 14rpx;
+  padding-top: 10rpx;
+  border-top: 1rpx solid rgba(124, 92, 252, 0.04);
 }
 
-/* 进度条 - 渐变发光 */
-.progress-row {
+.subtask-face-bar {
   display: flex;
   align-items: center;
-  margin-top: 20rpx;
+  margin-bottom: 10rpx;
 }
 
-.progress-track {
+.subtask-face-track {
   flex: 1;
-  height: 14rpx;
+  height: 8rpx;
   background: rgba(124, 92, 252, 0.06);
-  border-radius: 7rpx;
+  border-radius: 4rpx;
   overflow: hidden;
 }
 
-.progress-bar {
+.subtask-face-fill {
   height: 100%;
-  border-radius: 7rpx;
+  border-radius: 4rpx;
   background: linear-gradient(90deg, #7C5CFC, #A78BFA, #EC4899);
-  position: relative;
   transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.progress-glow {
-  position: absolute;
-  right: 0;
-  top: -4rpx;
-  bottom: -4rpx;
-  width: 32rpx;
-  background: radial-gradient(circle, rgba(167,139,250,0.6), transparent);
-  border-radius: 50%;
-}
-
-.progress-pct {
+.subtask-face-count {
   font-size: 22rpx;
   font-weight: 600;
   color: #7C5CFC;
-  margin-left: 16rpx;
-  min-width: 64rpx;
-  text-align: right;
+  margin-left: 12rpx;
 }
 
-/* 子任务展开/折叠 */
-.subtask-toggle {
+.subtask-face-item {
   display: flex;
   align-items: center;
-  margin-top: 16rpx;
   padding: 8rpx 0;
 }
 
-.subtask-toggle-icon {
-  font-size: 22rpx;
-  color: #7C5CFC;
-  margin-right: 8rpx;
-  transition: transform 0.3s ease;
-  display: inline-block;
-}
+.subtask-face-item.face-done { opacity: 0.45; }
 
-.subtask-toggle-icon.expanded {
-  transform: rotate(90deg);
-}
-
-.subtask-toggle-text {
-  font-size: 24rpx;
-  color: #7C5CFC;
-  font-weight: 500;
-}
-
-/* 子任务列表 - 展开动画 */
-.subtask-list {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.subtask-list.show {
-  max-height: 1000rpx;
-}
-
-.subtask-item {
-  display: flex;
-  align-items: center;
-  padding: 14rpx 0 14rpx 8rpx;
-  border-bottom: 1rpx solid rgba(124, 92, 252, 0.04);
-  transition: opacity 0.2s ease;
-}
-
-.subtask-item:last-child {
-  border-bottom: none;
-}
-
-/* 子任务勾选框 */
-.subtask-checkbox {
-  width: 36rpx;
-  height: 36rpx;
+.face-check {
+  width: 30rpx; height: 30rpx;
   border-radius: 50%;
-  border: 3rpx solid rgba(124, 92, 252, 0.3);
-  margin-right: 16rpx;
+  border: 2rpx solid rgba(124, 92, 252, 0.25);
+  margin-right: 12rpx;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s ease;
 }
 
-.subtask-checkbox.checked {
+.face-check.checked {
   background: linear-gradient(135deg, #7C5CFC, #A78BFA);
   border-color: transparent;
-  transform: scale(1.1);
 }
 
-.subtask-check-icon {
-  font-size: 20rpx;
+.face-check-icon {
+  font-size: 16rpx;
   color: #FFFFFF;
   font-weight: 700;
 }
 
-.subtask-title {
-  flex: 1;
-  font-size: 26rpx;
+.face-title {
+  font-size: 25rpx;
   color: #374151;
-  line-height: 1.4;
-  transition: all 0.2s ease;
+  line-height: 1.3;
 }
 
-.subtask-title-done {
+.face-title-done {
   text-decoration: line-through;
   color: #A5A5C0;
 }
 
-.subtask-time {
-  font-size: 20rpx;
-  color: #A5A5C0;
-  margin-left: 12rpx;
-  flex-shrink: 0;
+.subtask-more {
+  padding: 6rpx 0;
+  text-align: center;
 }
 
-.subtask-done {
-  opacity: 0.6;
+.subtask-more text {
+  font-size: 22rpx;
+  color: #7C5CFC;
+  font-weight: 500;
 }
 
-/* 标签行 */
+/* ====== 底部：标签 + 按钮 ====== */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14rpx;
+  padding-top: 10rpx;
+  border-top: 1rpx solid rgba(124, 92, 252, 0.04);
+}
+
 .tag-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-top: 16rpx;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
 }
 
 .info-tag {
-  font-size: 22rpx;
+  font-size: 21rpx;
   color: #6B7280;
-  padding: 4rpx 14rpx;
-  border-radius: 20rpx;
+  padding: 3rpx 12rpx;
+  border-radius: 16rpx;
   background: rgba(124, 92, 252, 0.04);
+  white-space: nowrap;
 }
 
-.info-tag.streak {
-  background: rgba(255, 107, 157, 0.06);
-}
+.info-tag.due { color: #A5A5C0; background: transparent; }
+.info-tag.due-overdue { color: #FF6B6B; font-weight: 600; background: rgba(255,107,107,0.08); }
 
-.info-tag.due {
-  color: #A5A5C0;
-  background: transparent;
-}
-
-.info-tag.due-overdue {
-  color: #FF6B6B;
-  font-weight: 600;
-  background: rgba(255, 107, 107, 0.08);
-}
-
-/* 操作按钮 */
-.action-row {
+/* 紧凑操作按钮 */
+.action-btns {
   display: flex;
-  align-items: center;
-  gap: 16rpx;
-  margin-top: 24rpx;
-  padding-top: 20rpx;
-  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+  gap: 12rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
 }
 
-.btn-done {
-  flex: 1;
+.act-btn {
+  padding: 10rpx 24rpx;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.act-btn:active { transform: scale(0.92); }
+
+.act-complete {
   background: linear-gradient(135deg, #7C5CFC, #A78BFA);
   color: #FFFFFF;
-  font-size: 26rpx;
-  font-weight: 600;
-  padding: 16rpx 0;
-  border-radius: 40rpx;
-  border: none;
-  letter-spacing: 2rpx;
-  box-shadow: 0 6rpx 20rpx rgba(124, 92, 252, 0.25);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4rpx 12rpx rgba(124, 92, 252, 0.25);
 }
 
-.btn-done:active {
-  transform: scale(0.95);
+.act-postpone {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94A3B8;
 }
 
-.btn-done::after {
-  border: none;
-}
-
-.btn-skip {
-  flex: none;
-  background: transparent;
-  color: #A5A5C0;
-  font-size: 24rpx;
-  padding: 16rpx 24rpx;
-  border: none;
-}
-
-.btn-skip::after {
-  border: none;
-}
-
-/* 完成徽章 */
+/* ====== 完成徽章 ====== */
 .done-badge {
-  margin-top: 16rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #06D6A0;
   font-weight: 500;
+  flex-shrink: 0;
 }

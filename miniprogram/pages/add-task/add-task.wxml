@@ -1,9 +1,36 @@
 <!-- 新建任务页面 - V2 -->
 <view class="container add-task-page">
 
+  <!-- 卡片类型选择 -->
+  <view class="form-section">
+    <view class="card-type-bar">
+      <view
+        class="card-type-chip {{cardType === item.key ? 'active' : ''}}"
+        wx:for="{{cardTypeList}}"
+        wx:key="key"
+        bindtap="onCardTypeSelect"
+        data-key="{{item.key}}"
+      >
+        <text class="card-type-icon">{{item.icon}}</text>
+        <text class="card-type-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 所属愿景（仅 goal 类型） -->
+  <view class="form-section" wx:if="{{cardType === 'goal' && parentVisions.length > 0}}">
+    <view class="form-label-opt">所属愿景</view>
+    <picker bindchange="onParentVisionChange" value="{{parentVisionIndex}}" range="{{parentVisions}}" range-key="title">
+      <view class="vision-picker">
+        <text wx:if="{{parentVisionIndex >= 0}}">🎯 {{parentVisions[parentVisionIndex].title}}</text>
+        <text wx:else class="placeholder-text">选择关联的愿景（可选）</text>
+      </view>
+    </picker>
+  </view>
+
   <!-- 任务名称 -->
   <view class="form-section">
-    <view class="form-label">做什么？</view>
+    <view class="form-label">{{cardType === 'vision' ? '你的愿景是？' : cardType === 'goal' ? '目标是什么？' : '做什么？'}}</view>
     <input
       class="form-input"
       placeholder="输入任务名称"
@@ -118,7 +145,7 @@
   <!-- 创建按钮 -->
   <view class="submit-section">
     <button class="btn-primary submit-btn" bindtap="onSubmit" disabled="{{!title}}">
-      创建任务
+      {{cardType === 'vision' ? '创建愿景' : cardType === 'goal' ? '创建目标' : '创建任务'}}
     </button>
   </view>
 

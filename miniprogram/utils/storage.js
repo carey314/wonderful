@@ -6,10 +6,11 @@ var KEYS = {
   COMPLETED_LOG: 'w_v1_completed_log',
   SETTINGS: 'w_v1_settings',
   MINDSET_STATE: 'w_v1_mindset_state',
+  FOCUS_LOG: 'w_v1_focus_log',
   SCHEMA_VERSION: 'w_v1_schema_version',
 }
 
-var CURRENT_SCHEMA_VERSION = 1
+var CURRENT_SCHEMA_VERSION = 2
 
 // ========================
 // 底层工具
@@ -61,6 +62,9 @@ function migrate(fromVersion) {
       _set(KEYS.MINDSET_STATE, { liked: {}, collected: {} })
     }
   }
+  if (fromVersion < 2) {
+    if (!_get(KEYS.FOCUS_LOG, null)) _set(KEYS.FOCUS_LOG, [])
+  }
 }
 
 // ========================
@@ -76,8 +80,19 @@ function getTasks(params) {
     if (params.project) {
       tasks = tasks.filter(function (t) { return t.project === params.project })
     }
+    if (params.cardType || params.card_type) {
+      var ct = params.cardType || params.card_type
+      tasks = tasks.filter(function (t) { return (t.cardType || t.card_type || 'daily') === ct })
+    }
   }
   return tasks
+}
+
+function getChildTasks(parentId) {
+  var tasks = _get(KEYS.TASKS, [])
+  return tasks.filter(function (t) {
+    return (t.parentCardId || t.parent_card_id) === parentId && t.status !== 'archived'
+  })
 }
 
 function getTodayTasks() {
@@ -298,6 +313,28 @@ function updateStreak() {
 }
 
 // ========================
+// 专注/快速启动记录
+// ========================
+
+function logFocusSession(taskId, durationSeconds, bonusCoins) {
+  var log = _get(KEYS.FOCUS_LOG, [])
+  log.push({
+    taskId: taskId,
+    duration: durationSeconds,
+    bonusCoins: bonusCoins || 0,
+    timestamp: Date.now(),
+  })
+  _set(KEYS.FOCUS_LOG, log)
+}
+
+function getTodayFocusCount() {
+  var log = _get(KEYS.FOCUS_LOG, [])
+  var now = new Date()
+  var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return log.filter(function(l) { return l.timestamp >= todayStart }).length
+}
+
+// ========================
 // 设置
 // ========================
 
@@ -366,6 +403,7 @@ module.exports = {
   tasks: {
     list: getTasks,
     today: getTodayTasks,
+    children: getChildTasks,
     get: getTask,
     create: addTask,
     createBatch: addTasks,
@@ -389,6 +427,11 @@ module.exports = {
   streak: {
     get: getStreak,
     update: updateStreak,
+  },
+
+  focus: {
+    log: logFocusSession,
+    getTodayCount: getTodayFocusCount,
   },
 
   settings: {

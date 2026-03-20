@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:itch.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:opengameart.org)",
+      "WebFetch(domain:craftpix.net)",
+      "WebFetch(domain:store.steampowered.com)",
+      "WebFetch(domain:elthen.itch.io)",
+      "WebFetch(domain:toffeecraft.itch.io)",
+      "WebFetch(domain:seethingswarm.itch.io)",
+      "WebFetch(domain:free-game-assets.itch.io)",
+      "Bash(curl -v -L http://qxju.shop/wonderful-api/api/cards)",
+      "Bash(curl -v http://qxju.shop/wonderful-api/api/cards)",
+      "Bash(curl:*)",
+      "Bash(dig +short qxju.shop)",
+      "Bash(nslookup qxju.shop)"
+    ]
+  }
+}

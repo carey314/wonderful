@@ -10,6 +10,10 @@
     <view class="user-info">
       <text class="user-name">{{userInfo.nickName || '新朋友'}}</text>
       <text class="user-joined">加入 Wonderful 第 {{useDays}} 天</text>
+      <view class="login-status {{isLoggedIn ? 'online' : 'offline'}}">
+        <view class="status-dot"></view>
+        <text class="status-text">{{loginStatusText}}</text>
+      </view>
     </view>
   </view>
 
@@ -118,6 +122,16 @@
       <text class="setting-label">关于 Wonderful</text>
       <text class="setting-value"></text>
       <text class="setting-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <view class="logout-btn" bindtap="logout">
+      <text>退出登录</text>
+    </view>
+    <view class="current-account" wx:if="{{userInfo.nickName}}">
+      <text>当前账号：{{userInfo.nickName}}</text>
     </view>
   </view>
 

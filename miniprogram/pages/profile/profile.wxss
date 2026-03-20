@@ -63,6 +63,34 @@
   margin-top: 8rpx;
 }
 
+/* 登录状态指示器 */
+.login-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 6rpx;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.login-status.online .status-dot {
+  background: var(--color-success);
+  box-shadow: 0 0 8rpx rgba(6, 214, 160, 0.5);
+}
+
+.login-status.offline .status-dot {
+  background: var(--color-text-light);
+}
+
+.status-text {
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+}
+
 /* 金币卡片 - 渐变玻璃 */
 .coin-card {
   background: var(--gradient-sunset) !important;
@@ -518,6 +546,42 @@
   font-size: 26rpx;
   color: var(--color-text-light);
   padding: var(--spacing-sm);
+}
+
+/* ======================== */
+/* 退出登录                 */
+/* ======================== */
+.logout-section {
+  margin-top: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logout-btn {
+  width: 100%;
+  text-align: center;
+  padding: var(--spacing-md) 0;
+  font-size: 28rpx;
+  color: #FF6B9D;
+  font-weight: 500;
+  background: rgba(255, 107, 157, 0.06);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.logout-btn:active {
+  background: rgba(255, 107, 157, 0.12);
+  transform: scale(0.98);
+}
+
+.current-account {
+  margin-top: var(--spacing-sm);
+}
+
+.current-account text {
+  font-size: 22rpx;
+  color: var(--color-text-light);
 }
 
 @keyframes pulse-soft {

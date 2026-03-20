@@ -48,6 +48,7 @@
         mode="detail"
         bind:complete="onTaskComplete"
         bind:skip="onTaskSkip"
+        bind:postpone="onTaskPostpone"
         bind:tap="onTaskDetail"
         bind:subtaskToggle="onSubtaskToggle"
       />

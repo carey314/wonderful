@@ -54,6 +54,26 @@
     </view>
   </view>
 
+  <!-- 活跃目标 -->
+  <view class="active-goals" wx:if="{{activeGoals.length > 0}}">
+    <view
+      class="goal-progress-card anim-float-in"
+      wx:for="{{activeGoals}}"
+      wx:key="id"
+      bindtap="onGoalTap"
+      data-id="{{item.id}}"
+    >
+      <view class="goal-progress-header">
+        <text class="goal-progress-title">🏁 {{item.title}}</text>
+        <text class="goal-progress-pct">{{item.progress.percentage}}%</text>
+      </view>
+      <view class="goal-progress-track">
+        <view class="goal-progress-fill" style="width: {{item.progress.percentage}}%"></view>
+      </view>
+      <text class="goal-today-task" wx:if="{{item.todayTask}}">今日: {{item.todayTask.title}}</text>
+    </view>
+  </view>
+
   <!-- 项目筛选标签 -->
   <scroll-view class="filter-scroll" scroll-x>
     <view class="filter-inner">
@@ -77,8 +97,10 @@
       wx:for="{{filteredTasks}}"
       wx:key="id"
       task="{{item}}"
+      bind:tap="onTaskTap"
       bind:complete="onTaskComplete"
       bind:skip="onTaskSkip"
+      bind:postpone="onTaskPostpone"
       bind:subtaskToggle="onSubtaskToggle"
     />
   </view>
@@ -106,6 +128,7 @@
         wx:key="id"
         task="{{item}}"
         completed="{{true}}"
+        bind:tap="onTaskTap"
       />
     </view>
   </view>

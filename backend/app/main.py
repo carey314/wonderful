@@ -40,7 +40,8 @@ app.add_middleware(
 )
 
 # 注册路由
-app.include_router(users.router)
+app.include_router(users.router, prefix="/api/users")              # /api/users/* 兼容 app.js
+app.include_router(users.router, prefix="/api/user")               # /api/user/*  对齐 api.js
 app.include_router(cards.router)
 app.include_router(ai_chat.router)
 app.include_router(rewards.router)

@@ -12,7 +12,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 120rpx 48rpx 80rpx;
+  padding: 0 48rpx 80rpx;
   animation: float-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -27,52 +27,7 @@
   justify-content: center;
 }
 
-.logo-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 80rpx;
-}
-
-.logo-circle {
-  width: 180rpx;
-  height: 180rpx;
-  border-radius: 52rpx;
-  background: var(--gradient-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32rpx;
-  position: relative;
-  animation: bounce-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-/* logo 光晕 */
-.logo-circle::before {
-  content: '';
-  position: absolute;
-  inset: -16rpx;
-  border-radius: 60rpx;
-  background: linear-gradient(135deg, rgba(124,92,252,0.2), rgba(255,107,157,0.15));
-  z-index: -1;
-  animation: pulse-soft 3s ease-in-out infinite;
-}
-
-.logo-text {
-  color: #FFFFFF;
-  font-size: 80rpx;
-  font-weight: 800;
-}
-
-.app-name {
-  font-size: 52rpx;
-  font-weight: 800;
-  letter-spacing: 4rpx;
-  background: var(--gradient-sunset);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* logo 样式已提升到 app.wxss */
 
 .slogan {
   display: flex;
@@ -362,26 +317,9 @@
   box-shadow: 0 2rpx 8rpx rgba(124, 92, 252, 0.3);
 }
 
-/* ======================== */
-/* 动画 */
-/* ======================== */
-@keyframes float-in {
-  from { opacity: 0; transform: translateY(40rpx); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* float-in / bounce-in / scale-in 已在 app.wxss 全局定义 */
 
-@keyframes bounce-in {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.05); }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
+/* onboarding 专用 pulse-soft（带 opacity 变化） */
 @keyframes pulse-soft {
   0%, 100% { transform: scale(1); opacity: 0.6; }
   50% { transform: scale(1.08); opacity: 1; }

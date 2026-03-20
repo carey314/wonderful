@@ -1,0 +1,121 @@
+<!-- 目标详情页 -->
+<view class="detail-page" wx:if="{{card}}">
+
+  <!-- 头部信息 -->
+  <view class="detail-header anim-float-in">
+    <view class="header-badges">
+      <view class="type-badge" style="background: {{cardTypeInfo.color}}20; color: {{cardTypeInfo.color}}">
+        {{cardTypeInfo.icon}} {{cardTypeInfo.label}}
+      </view>
+      <view class="status-badge {{card.status}}">
+        {{card.status === 'completed' ? '已完成' : card.status === 'in_progress' ? '进行中' : '待开始'}}
+      </view>
+    </view>
+    <text class="detail-title">{{card.title}}</text>
+    <text class="detail-desc" wx:if="{{card.description}}">{{card.description}}</text>
+    <view class="detail-meta">
+      <text class="meta-item" wx:if="{{deadlineText}}">📅 {{deadlineText}}</text>
+      <text class="meta-item" wx:if="{{card.coinReward || card.coin_reward}}">✨ {{card.coinReward || card.coin_reward}}</text>
+    </view>
+  </view>
+
+  <!-- 进度 -->
+  <view class="progress-section anim-float-in anim-delay-1" wx:if="{{children.length > 0}}">
+    <view class="progress-info">
+      <text class="progress-label">整体进度</text>
+      <text class="progress-value">{{progress.completed}}/{{progress.total}} {{cardType === 'vision' ? '目标' : '任务'}}  {{progress.percentage}}%</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-bar" style="width: {{progress.percentage}}%">
+        <view class="progress-glow" wx:if="{{progress.percentage > 0}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 子项列表 -->
+  <view class="children-section anim-float-in anim-delay-1">
+    <view class="section-head">
+      <text class="section-title">{{cardType === 'vision' ? '里程碑目标' : '执行任务'}}</text>
+      <text class="section-count" wx:if="{{children.length > 0}}">{{children.length}}</text>
+    </view>
+
+    <view class="children-list" wx:if="{{children.length > 0}}">
+      <view
+        class="child-card {{item.status === 'completed' ? 'done' : ''}}"
+        wx:for="{{children}}"
+        wx:key="id"
+        bindtap="onChildTap"
+        data-child="{{item}}"
+      >
+        <view class="child-icon">
+          <text wx:if="{{item.status === 'completed'}}">✅</text>
+          <text wx:elif="{{item.status === 'in_progress'}}">🔄</text>
+          <text wx:else>⏳</text>
+        </view>
+        <view class="child-info">
+          <text class="child-title {{item.status === 'completed' ? 'child-done' : ''}}">{{item.title}}</text>
+          <view class="child-meta">
+            <text wx:if="{{item.estimatedMinutes || item.estimated_minutes}}">⏱ {{item.estimatedMinutes || item.estimated_minutes}}min</text>
+            <text wx:if="{{item.deadline || item.due_date}}">📅 {{item.deadline || item.due_date}}</text>
+          </view>
+        </view>
+        <text class="child-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="children-empty" wx:if="{{children.length === 0}}">
+      <text class="empty-text">还没有{{cardType === 'vision' ? '子目标' : '任务'}}，用 AI 拆解或手动添加</text>
+    </view>
+
+    <!-- 手动添加 -->
+    <view class="add-child-row">
+      <input
+        class="add-child-input"
+        placeholder="添加{{cardType === 'vision' ? '子目标' : '任务'}}..."
+        placeholder-class="placeholder-light"
+        value="{{newChildTitle}}"
+        bindinput="onNewChildInput"
+        bindconfirm="addChild"
+        confirm-type="done"
+      />
+      <view class="add-child-btn {{newChildTitle ? 'active' : ''}}" catchtap="addChild">+</view>
+    </view>
+
+    <!-- AI 拆解按钮 -->
+    <button class="ai-btn" catchtap="onAiDecompose" disabled="{{aiLoading}}">
+      {{aiLoading ? '拆解中...' : '✨ AI 帮我拆解'}}
+    </button>
+  </view>
+
+  <!-- AI 建议面板 -->
+  <view class="ai-mask" wx:if="{{showAiPanel}}" catchtap="closeAiPanel"></view>
+  <view class="ai-panel {{showAiPanel ? 'show' : ''}}">
+    <view class="ai-panel-head">
+      <text class="ai-panel-title">✨ AI 拆解建议</text>
+      <view class="ai-panel-close" catchtap="closeAiPanel">✕</view>
+    </view>
+    <scroll-view class="ai-scroll" scroll-y>
+      <view
+        class="ai-item {{item.selected ? 'selected' : ''}}"
+        wx:for="{{aiSuggestions}}"
+        wx:key="title"
+        catchtap="toggleAiSuggestion"
+        data-index="{{index}}"
+      >
+        <view class="ai-check {{item.selected ? 'checked' : ''}}">
+          <text wx:if="{{item.selected}}" class="check-icon">✓</text>
+        </view>
+        <view class="ai-item-info">
+          <text class="ai-item-title">{{item.title}}</text>
+          <text class="ai-item-desc" wx:if="{{item.description}}">{{item.description}}</text>
+        </view>
+        <text class="ai-item-time" wx:if="{{item.estimatedMinutes}}">{{item.estimatedMinutes}}min</text>
+      </view>
+    </scroll-view>
+    <button class="btn-primary ai-apply-btn" catchtap="applyAiSuggestions" disabled="{{selectedAiCount === 0}}">
+      应用选中的 {{selectedAiCount}} 项
+    </button>
+  </view>
+
+</view>

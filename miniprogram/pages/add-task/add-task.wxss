@@ -1,7 +1,52 @@
 /* 新建任务页面 - V2 */
 .add-task-page {
-  padding-bottom: 180rpx;
+  padding-bottom: 80rpx;
 }
+
+/* Card Type Selector */
+.card-type-bar {
+  display: flex;
+  gap: 12rpx;
+}
+
+.card-type-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 18rpx 0;
+  background: var(--glass-bg);
+  border: 2rpx solid rgba(124, 92, 252, 0.1);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s ease;
+}
+
+.card-type-chip.active {
+  background: var(--gradient-primary);
+  border-color: transparent;
+}
+
+.card-type-icon { font-size: 24rpx; }
+
+.card-type-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.card-type-chip.active .card-type-label { color: #FFFFFF; }
+
+/* Vision picker */
+.vision-picker {
+  padding: 20rpx 24rpx;
+  background: rgba(124, 92, 252, 0.04);
+  border-radius: var(--radius-lg);
+  font-size: 28rpx;
+  color: var(--color-text);
+}
+
+.placeholder-text { color: var(--color-text-light); }
 
 .form-section {
   margin-bottom: var(--spacing-xl);
@@ -276,16 +321,8 @@
 
 /* 提交按钮 */
 .submit-section {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--spacing-lg);
-  padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
-  background: rgba(245, 243, 255, 0.85);
-  backdrop-filter: blur(40rpx);
-  -webkit-backdrop-filter: blur(40rpx);
-  border-top: 1rpx solid rgba(124, 92, 252, 0.06);
+  margin-top: 48rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
 }
 
 .submit-btn {

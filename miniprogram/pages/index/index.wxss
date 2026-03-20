@@ -4,6 +4,61 @@
   padding-top: var(--spacing-md);
 }
 
+/* Active Goals */
+.active-goals {
+  margin-bottom: 16rpx;
+}
+
+.goal-progress-card {
+  background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(124,92,252,0.06));
+  border: 1rpx solid rgba(59,130,246,0.12);
+  border-radius: var(--radius-lg);
+  padding: 20rpx 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.goal-progress-card:active { transform: scale(0.98); }
+
+.goal-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.goal-progress-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.goal-progress-pct {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #3B82F6;
+}
+
+.goal-progress-track {
+  height: 10rpx;
+  background: rgba(59,130,246,0.08);
+  border-radius: 5rpx;
+  overflow: hidden;
+  margin-bottom: 8rpx;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  border-radius: 5rpx;
+  background: linear-gradient(90deg, #3B82F6, #7C5CFC);
+  transition: width 0.5s ease;
+  min-width: 2%;
+}
+
+.goal-today-task {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+}
+
 /* ======================== */
 /* 顶部状态栏 */
 /* ======================== */

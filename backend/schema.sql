@@ -33,17 +33,23 @@ CREATE TABLE IF NOT EXISTS cards (
     user_id INTEGER NOT NULL,
     title TEXT NOT NULL,                      -- 任务标题
     description TEXT DEFAULT '',              -- 任务描述
-    priority TEXT DEFAULT 'seed'              -- 优先级: firefighter(紧急重要), sniper(重要不紧急), seed(种子), recycle(可删除)
-        CHECK(priority IN ('firefighter', 'sniper', 'seed', 'recycle')),
-    status TEXT DEFAULT 'active'              -- 状态: active(进行中), completed(已完成), paused(暂停), archived(归档)
-        CHECK(status IN ('active', 'completed', 'paused', 'archived')),
+    priority TEXT DEFAULT 'normal'            -- V2 优先级: urgent_important, important, urgent, normal
+        CHECK(priority IN ('urgent_important', 'important', 'urgent', 'normal')),
+    status TEXT DEFAULT 'pending'             -- 状态: pending, in_progress, completed, archived
+        CHECK(status IN ('pending', 'in_progress', 'completed', 'archived')),
     card_type TEXT DEFAULT 'daily'            -- 卡片类型: vision(长期愿景), goal(中期目标), daily(每日任务)
         CHECK(card_type IN ('vision', 'goal', 'daily')),
-    category TEXT DEFAULT '',                 -- 分类标签: 学习, 工作, 健康, 生活...
-    due_date TEXT DEFAULT '',                 -- 截止日期 (YYYY-MM-DD)
+    category TEXT DEFAULT '',                 -- 分类标签（V1 兼容）
+    project TEXT DEFAULT '',                  -- V2 项目分组: work, study, life, health, social, finance
+    due_date TEXT DEFAULT '',                 -- 截止日期/deadline (YYYY-MM-DD 或 ISO string)
     parent_card_id INTEGER DEFAULT NULL,      -- 父卡片ID（用于目标拆解）
     estimated_minutes INTEGER DEFAULT 30,     -- 预估用时（分钟）
     coin_reward INTEGER DEFAULT 10,           -- 完成可获金币
+    is_urgent INTEGER DEFAULT 0,             -- V2 紧急标记 (0/1)
+    is_important INTEGER DEFAULT 0,          -- V2 重要标记 (0/1)
+    energy TEXT DEFAULT 'medium'             -- V2 精力需求: high, medium, low
+        CHECK(energy IN ('high', 'medium', 'low')),
+    subtasks_json TEXT DEFAULT '[]',          -- V2 子任务 JSON 数组
     progress INTEGER DEFAULT 0,              -- 进度 (0-100)
     postponed_count INTEGER DEFAULT 0,        -- 被推迟次数（用于拖延检测）
     created_at TEXT DEFAULT (datetime('now', 'localtime')),

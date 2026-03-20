@@ -1,10 +1,13 @@
 // 个人中心页面
-const storage = require('../../utils/storage')
+var storage = require('../../utils/storage')
+var api = require('../../utils/api')
 
 Page({
   data: {
     userInfo: {},
     useDays: 1,
+    isLoggedIn: false,
+    loginStatusText: '',
     stats: {
       totalCompleted: 0,
       streakDays: 0,
@@ -35,30 +38,39 @@ Page({
   },
 
   onLoad() {
-    const app = getApp()
+    var app = getApp()
     if (app.globalData.userInfo) {
       this.setData({ userInfo: app.globalData.userInfo })
     }
     this.loadStats()
     this.loadSettings()
     this.loadAirbagData()
-    this.updateBadges()
   },
 
   onShow() {
     this.loadStats()
     this.loadAirbagData()
-    this.updateBadges()
+    this.updateLoginStatus()
   },
 
-  // 加载真实统计数据
-  loadStats() {
-    const stats = storage.stats.get()
-    const userInfo = wx.getStorageSync('userInfo')
-    const createdAt = userInfo && userInfo.createdAt ? userInfo.createdAt : Date.now()
-    const useDays = Math.max(1, Math.ceil((Date.now() - createdAt) / 86400000))
-
+  updateLoginStatus() {
+    var token = wx.getStorageSync('token')
     this.setData({
+      isLoggedIn: !!token,
+      loginStatusText: token ? '已登录' : '离线模式',
+    })
+  },
+
+  // 加载统计数据：API 优先 + 本地补充
+  loadStats() {
+    var self = this
+    var stats = storage.stats.get()
+    var userInfo = wx.getStorageSync('userInfo')
+    var createdAt = userInfo && userInfo.createdAt ? userInfo.createdAt : Date.now()
+    var useDays = Math.max(1, Math.ceil((Date.now() - createdAt) / 86400000))
+
+    // 先展示本地数据，同时更新徽章
+    self.setData({
       useDays: useDays,
       stats: {
         totalCompleted: stats.totalCompleted,
@@ -67,11 +79,21 @@ Page({
         completionRate: stats.completionRate,
       },
     })
+    self.updateBadges(stats)
+
+    // 尝试从 API 获取最新用户信息
+    api.user.getProfile().then(function (profile) {
+      self.setData({
+        userInfo: profile,
+        'stats.totalCoins': profile.coins || stats.totalCoins,
+        'stats.streakDays': profile.streak_days || stats.streakDays,
+      })
+    }).catch(function () {})
   },
 
   // 加载设置
   loadSettings() {
-    const settings = storage.settings.get()
+    var settings = storage.settings.get()
     this.setData({
       'settings.morningTime': settings.morningTime || '08:00',
       'settings.eveningTime': settings.eveningTime || '21:00',
@@ -80,9 +102,9 @@ Page({
   },
 
   // 根据统计数据更新徽章解锁状态
-  updateBadges() {
-    const stats = storage.stats.get()
-    const badges = this.data.badges.map(function (b) {
+  updateBadges(stats) {
+    if (!stats) stats = storage.stats.get()
+    var badges = this.data.badges.map(function (b) {
       var unlocked = false
       switch (b.id) {
         case '1': unlocked = true; break // 新芽：注册即解锁
@@ -99,9 +121,9 @@ Page({
 
   // 加载安全气囊数据
   loadAirbagData() {
-    const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`
-    let airbag = wx.getStorageSync('airbagData') || {
+    var now = new Date()
+    var currentMonth = now.getFullYear() + '-' + (now.getMonth() + 1)
+    var airbag = wx.getStorageSync('airbagData') || {
       remaining: 2,
       total: 2,
       usedThisMonth: 0,
@@ -118,12 +140,12 @@ Page({
       wx.setStorageSync('airbagData', airbag)
     }
 
-    this.setData({ airbag })
+    this.setData({ airbag: airbag })
   },
 
   // 使用安全气囊
   useAirbag() {
-    const airbag = { ...this.data.airbag }
+    var airbag = Object.assign({}, this.data.airbag)
     if (airbag.remaining <= 0) {
       wx.showToast({ title: '本月气囊已用完', icon: 'none' })
       return
@@ -134,7 +156,7 @@ Page({
     wx.setStorageSync('airbagData', airbag)
 
     this.setData({
-      airbag,
+      airbag: airbag,
       showAirbagModal: false,
     })
 
@@ -154,7 +176,7 @@ Page({
 
   // 设置项点击
   onSettingTap(e) {
-    const key = e.currentTarget.dataset.key
+    var key = e.currentTarget.dataset.key
     switch (key) {
       case 'reminder':
         this.showTimePicker()
@@ -179,16 +201,17 @@ Page({
 
   // 选择提醒时间
   showTimePicker() {
+    var self = this
     wx.showActionSheet({
       itemList: ['早上 7:00 / 晚上 21:00', '早上 8:00 / 晚上 21:30', '早上 9:00 / 晚上 22:00', '自定义时间'],
-      success: (res) => {
-        const times = [
+      success: function (res) {
+        var times = [
           { morningTime: '07:00', eveningTime: '21:00' },
           { morningTime: '08:00', eveningTime: '21:30' },
           { morningTime: '09:00', eveningTime: '22:00' },
         ]
         if (res.tapIndex < 3) {
-          this.setData({
+          self.setData({
             'settings.morningTime': times[res.tapIndex].morningTime,
             'settings.eveningTime': times[res.tapIndex].eveningTime,
           })
@@ -203,11 +226,12 @@ Page({
 
   // 选择 AI 风格
   showStylePicker() {
+    var self = this
     wx.showActionSheet({
       itemList: ['温暖朋友', '幽默段子手', '理性分析师'],
-      success: (res) => {
-        const styles = ['温暖朋友', '幽默段子手', '理性分析师']
-        this.setData({ 'settings.aiStyle': styles[res.tapIndex] })
+      success: function (res) {
+        var styles = ['温暖朋友', '幽默段子手', '理性分析师']
+        self.setData({ 'settings.aiStyle': styles[res.tapIndex] })
         storage.settings.update({ aiStyle: styles[res.tapIndex] })
       },
     })
@@ -219,5 +243,22 @@ Page({
 
   goToBuddy() {
     wx.navigateTo({ url: '/pages/buddy/buddy' })
+  },
+
+  // 退出登录
+  logout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后需要重新登录，确定退出吗？',
+      confirmText: '退出',
+      confirmColor: '#FF6B9D',
+      success: function (res) {
+        if (res.confirm) {
+          var app = getApp()
+          app.logout()
+          wx.reLaunch({ url: '/pages/login/login' })
+        }
+      },
+    })
   },
 })

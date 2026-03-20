@@ -18,7 +18,7 @@ from app.models.schemas import (
     TokenResponse, MessageResponse,
 )
 
-router = APIRouter(prefix="/api/users", tags=["用户系统"])
+router = APIRouter(tags=["用户系统"])
 
 
 # ============================================
@@ -76,7 +76,7 @@ async def wx_login(request: WxLoginRequest):
     token = _create_token(user["id"])
 
     return TokenResponse(
-        access_token=token,
+        token=token,
         user=UserProfile(
             id=user["id"],
             nickname=user["nickname"],
@@ -114,7 +114,8 @@ async def get_profile(user_id: int = Depends(get_current_user_id)):
     )
 
 
-@router.put("/profile", response_model=MessageResponse, summary="更新用户设置")
+@router.put("/settings", response_model=MessageResponse, summary="更新用户设置")
+@router.put("/profile", response_model=MessageResponse, summary="更新用户设置（兼容）")
 async def update_profile(
     settings: UserSettingsUpdate,
     user_id: int = Depends(get_current_user_id),
@@ -165,7 +166,7 @@ async def dev_login():
     token = _create_token(user["id"])
 
     return TokenResponse(
-        access_token=token,
+        token=token,
         user=UserProfile(
             id=user["id"],
             nickname=user["nickname"],

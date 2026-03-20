@@ -1,0 +1,27 @@
+<view class="login-page">
+  <view class="login-content" style="padding-top:{{navPaddingTop}}px">
+    <view class="logo-area">
+      <view class="logo-circle">
+        <text class="logo-text">W</text>
+      </view>
+      <text class="app-name">Wonderful</text>
+    </view>
+
+    <view class="greeting">
+      <text class="greeting-line" wx:if="{{nickname}}">{{nickname}}，欢迎回来</text>
+      <text class="greeting-line" wx:else>欢迎回来</text>
+      <text class="greeting-sub">准备好继续你的精彩了吗？</text>
+    </view>
+
+    <button class="btn-primary login-btn" bindtap="onLogin" disabled="{{isLoading}}">
+      {{isLoading ? '登录中...' : '一键登录'}}
+    </button>
+
+    <view class="skip-btn" bindtap="onSkipLogin">先离线使用</view>
+
+    <view class="login-slogan">
+      <text class="slogan-line">不是逼自己变好</text>
+      <text class="slogan-line">而是让自己觉得变好很爽</text>
+    </view>
+  </view>
+</view>

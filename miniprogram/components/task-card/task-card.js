@@ -1,24 +1,12 @@
-// 任务卡片组件 - V2 升级版
-const { priorityMap, energyMap, formatDeadline } = require('../../utils/util')
-const { getTaskProgress, getSubtaskCountText, getTotalEstimatedMinutes, formatMinutes, getProjectInfo, toggleSubtask, isOverdue } = require('../../utils/task-model')
+// 任务卡片组件 - V3 滑动手势 + 子任务直接可见
+var { priorityMap, energyMap, formatDeadline } = require('../../utils/util')
+var { getTaskProgress, getSubtaskCountText, getTotalEstimatedMinutes, formatMinutes, getProjectInfo, toggleSubtask, isOverdue } = require('../../utils/task-model')
 
 Component({
   properties: {
-    // 任务数据对象
-    task: {
-      type: Object,
-      value: {},
-    },
-    // 显示模式: simple(首页简洁) | detail(列表详细)
-    mode: {
-      type: String,
-      value: 'simple',
-    },
-    // 是否已完成
-    completed: {
-      type: Boolean,
-      value: false,
-    },
+    task: { type: Object, value: {} },
+    mode: { type: String, value: 'simple' },
+    completed: { type: Boolean, value: false },
   },
 
   data: {
@@ -28,20 +16,23 @@ Component({
     priorityBg: '',
     energyLabel: '',
     energyColor: '',
-    // V2 新增
-    expanded: false,
+    // 子任务
+    hasSubtasks: false,
     progress: 0,
     subtaskCountText: '',
+    visibleSubtasks: [],
+    extraSubtaskCount: 0,
+    showAllSubtasks: false,
+    // 信息
     estimatedTimeText: '',
     projectInfo: null,
     deadlineText: '',
     overdue: false,
-    hasSubtasks: false,
   },
 
   observers: {
     'task.priority': function (priority) {
-      const info = priorityMap[priority] || priorityMap.normal
+      var info = priorityMap[priority] || priorityMap.normal
       this.setData({
         priorityLabel: info.label,
         priorityIcon: info.icon,
@@ -50,22 +41,20 @@ Component({
       })
     },
     'task.energy': function (energy) {
-      const info = energyMap[energy] || energyMap.medium
-      this.setData({
-        energyLabel: info.label,
-        energyColor: info.color,
-      })
+      var info = energyMap[energy] || energyMap.medium
+      this.setData({ energyLabel: info.label, energyColor: info.color })
     },
     'task': function (task) {
       if (!task) return
-      const hasSubtasks = task.subtasks && task.subtasks.length > 0
-      const progress = getTaskProgress(task)
-      const totalMinutes = getTotalEstimatedMinutes(task)
+      var subs = task.subtasks || []
+      var hasSubtasks = subs.length > 0
       this.setData({
         hasSubtasks: hasSubtasks,
-        progress: progress,
+        progress: getTaskProgress(task),
         subtaskCountText: getSubtaskCountText(task),
-        estimatedTimeText: formatMinutes(totalMinutes),
+        visibleSubtasks: subs.slice(0, 3),
+        extraSubtaskCount: Math.max(0, subs.length - 3),
+        estimatedTimeText: formatMinutes(getTotalEstimatedMinutes(task)),
         projectInfo: getProjectInfo(task.project),
         deadlineText: formatDeadline(task.deadline),
         overdue: isOverdue(task),
@@ -74,42 +63,28 @@ Component({
   },
 
   methods: {
-    // 完成任务
-    onComplete() {
+    onComplete: function () {
       this.triggerEvent('complete', { taskId: this.data.task.id })
     },
-
-    // 跳过/不想做
-    onSkip() {
-      this.triggerEvent('skip', { taskId: this.data.task.id })
+    onPostpone: function () {
+      this.triggerEvent('postpone', { taskId: this.data.task.id })
     },
-
-    // 点击卡片查看详情
-    onTap() {
+    onTap: function () {
       this.triggerEvent('tap', { taskId: this.data.task.id })
     },
-
-    // 展开/折叠子任务
-    toggleExpand() {
-      this.setData({ expanded: !this.data.expanded })
+    toggleShowAll: function () {
+      this.setData({ showAllSubtasks: !this.data.showAllSubtasks })
     },
-
-    // 勾选子任务
-    onToggleSubtask(e) {
-      const subtaskId = e.currentTarget.dataset.id
-      const task = this.data.task
-      const updatedTask = toggleSubtask(task, subtaskId)
-      const allDone = updatedTask.subtasks.every(function (s) { return s.completed })
-
-      // 通知父页面更新任务数据
+    onToggleSubtask: function (e) {
+      var subtaskId = e.currentTarget.dataset.id
+      var task = this.data.task
+      var updatedTask = toggleSubtask(task, subtaskId)
       this.triggerEvent('subtaskToggle', {
         taskId: task.id,
         subtaskId: subtaskId,
         updatedTask: updatedTask,
       })
-
-      // 全部子任务完成 → 触发父任务完成事件
-      if (allDone) {
+      if (updatedTask.subtasks.every(function (s) { return s.completed })) {
         this.triggerEvent('complete', { taskId: task.id })
       }
     },

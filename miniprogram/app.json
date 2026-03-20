@@ -3,8 +3,12 @@
     "pages/index/index",
     "pages/tasks/tasks",
     "pages/add-task/add-task",
+    "pages/task-detail/task-detail",
+    "pages/goals/goals",
+    "pages/goals/goal-detail",
     "pages/mindset/mindset",
     "pages/profile/profile",
+    "pages/login/login",
     "pages/onboarding/onboarding",
     "pages/personality-test/personality-test",
     "pages/future-letter/future-letter",
@@ -43,8 +47,8 @@
         "selectedIconPath": "images/tab-add-active.png"
       },
       {
-        "pagePath": "pages/mindset/mindset",
-        "text": "转换",
+        "pagePath": "pages/goals/goals",
+        "text": "目标",
         "iconPath": "images/tab-mindset.png",
         "selectedIconPath": "images/tab-mindset-active.png"
       },

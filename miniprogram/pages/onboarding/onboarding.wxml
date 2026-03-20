@@ -2,7 +2,7 @@
 <view class="onboarding-page">
 
   <!-- 步骤 1: 欢迎页 -->
-  <view class="step" wx:if="{{step === 1}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 1}}">
     <view class="welcome-content">
       <view class="logo-area">
         <view class="logo-circle">
@@ -21,7 +21,7 @@
   </view>
 
   <!-- 步骤 2: 了解用户 -->
-  <view class="step" wx:if="{{step === 2}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 2}}">
     <view class="step-content">
       <text class="step-question">怎么称呼你？</text>
       <input
@@ -68,7 +68,7 @@
   </view>
 
   <!-- 步骤 3: 第一个任务 -->
-  <view class="step" wx:if="{{step === 3}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 3}}">
     <view class="step-content">
       <text class="step-question">最近有什么一直想做但还没开始的事吗？</text>
       <input
@@ -102,7 +102,7 @@
   </view>
 
   <!-- 步骤 4: 第一次思维转换体验 -->
-  <view class="step" wx:if="{{step === 4}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 4}}">
     <view class="step-content mindset-experience">
       <view class="mindset-card">
         <text class="mindset-task">{{firstTask}}？好选择。</text>
@@ -119,7 +119,7 @@
   </view>
 
   <!-- 步骤 5: 订阅消息授权 -->
-  <view class="step" wx:if="{{step === 5}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 5}}">
     <view class="step-content subscribe-step">
       <text class="subscribe-title">要不要我每天早上叫你？</text>
       <view class="subscribe-desc">
@@ -138,7 +138,7 @@
   </view>
 
   <!-- 步骤 6: 完成 -->
-  <view class="step" wx:if="{{step === 6}}">
+  <view class="step" style="padding-top:{{navPaddingTop}}px" wx:if="{{step === 6}}">
     <view class="step-content complete-step">
       <text class="complete-emoji">🎉</text>
       <text class="complete-title">好了！从明天开始</text>

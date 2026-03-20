@@ -1,0 +1,160 @@
+<view class="detail-page">
+  <!-- Header -->
+  <view class="detail-header anim-float-in" wx:if="{{task}}">
+    <view class="header-top">
+      <view class="priority-badge" style="background: {{priorityColor}}20; color: {{priorityColor}}">
+        {{priorityLabel}}
+      </view>
+      <view class="project-badge" wx:if="{{projectInfo}}" style="background: {{projectInfo.color}}20; color: {{projectInfo.color}}">
+        {{projectInfo.icon}} {{projectInfo.label}}
+      </view>
+      <view class="spacer"></view>
+      <view class="coin-display">
+        <text class="coin-num">+{{coinReward}}</text>
+        <text class="coin-icon">✨</text>
+      </view>
+    </view>
+    <text class="detail-title">{{task.title}}</text>
+    <text class="detail-desc" wx:if="{{task.description}}">{{task.description}}</text>
+  </view>
+
+  <!-- Progress -->
+  <view class="progress-section anim-float-in anim-delay-1" wx:if="{{hasSubtasks && task.status !== 'completed'}}">
+    <view class="progress-info">
+      <text class="progress-label">进度</text>
+      <text class="progress-value">{{subtaskCountText}}</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-bar" style="width: {{progress}}%">
+        <view class="progress-glow"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Subtask Section -->
+  <view class="subtask-section anim-float-in anim-delay-1" wx:if="{{task}}">
+    <view class="section-head">
+      <text class="section-title">子任务</text>
+      <text class="section-count" wx:if="{{hasSubtasks}}">{{subtaskCountText}}</text>
+    </view>
+
+    <!-- Subtask list -->
+    <view class="subtask-list" wx:if="{{hasSubtasks}}">
+      <view
+        class="subtask-row {{item.completed ? 'done' : ''}}"
+        wx:for="{{task.subtasks}}"
+        wx:key="id"
+      >
+        <view class="sub-check {{item.completed ? 'checked' : ''}}" catchtap="onToggleSubtask" data-id="{{item.id}}">
+          <text wx:if="{{item.completed}}" class="check-icon">✓</text>
+        </view>
+        <text class="sub-title {{item.completed ? 'sub-done' : ''}}">{{item.title}}</text>
+        <text class="sub-time" wx:if="{{item.estimatedMinutes > 0}}">{{item.estimatedMinutes}}min</text>
+        <view class="sub-actions">
+          <view class="sub-btn" catchtap="moveSubtaskUp" data-index="{{index}}" wx:if="{{index > 0}}">↑</view>
+          <view class="sub-btn" catchtap="moveSubtaskDown" data-index="{{index}}" wx:if="{{index < task.subtasks.length - 1}}">↓</view>
+          <view class="sub-btn sub-btn-del" catchtap="removeSubtask" data-id="{{item.id}}">✕</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Add subtask input -->
+    <view class="add-subtask-row">
+      <input
+        class="add-subtask-input"
+        placeholder="添加子任务..."
+        placeholder-class="placeholder-light"
+        value="{{newSubtaskTitle}}"
+        bindinput="onNewSubtaskInput"
+        bindconfirm="addSubtask"
+        confirm-type="done"
+      />
+      <view class="add-subtask-btn {{newSubtaskTitle ? 'active' : ''}}" catchtap="addSubtask">+</view>
+    </view>
+
+    <!-- AI Decompose button -->
+    <button class="ai-decompose-btn" catchtap="onAiDecompose" disabled="{{aiLoading}}">
+      {{aiLoading ? '拆解中...' : '✨ 帮我拆解'}}
+    </button>
+  </view>
+
+  <!-- Meta info -->
+  <view class="meta-section anim-float-in anim-delay-2" wx:if="{{task}}">
+    <view class="meta-item" wx:if="{{estimatedTimeText}}">
+      <text class="meta-icon">⏱</text>
+      <text class="meta-text">预计 {{estimatedTimeText}}</text>
+    </view>
+    <view class="meta-item" wx:if="{{deadlineText}}">
+      <text class="meta-icon">📅</text>
+      <text class="meta-text {{overdue ? 'text-danger' : ''}}">{{deadlineText}}</text>
+    </view>
+    <view class="meta-item" wx:if="{{task.energy}}">
+      <text class="meta-icon">⚡</text>
+      <text class="meta-text">{{task.energy === 'high' ? '高能量' : task.energy === 'low' ? '低能量' : '中能量'}}</text>
+    </view>
+  </view>
+
+  <!-- Timer Overlay -->
+  <view class="timer-overlay" wx:if="{{timerActive}}">
+    <view class="timer-card anim-scale-in">
+      <view class="timer-ring-wrap">
+        <view class="timer-ring" style="background: conic-gradient(var(--color-primary) {{timerPercent * 3.6}}deg, rgba(124,92,252,0.1) 0deg)">
+          <view class="timer-inner">
+            <text class="timer-display">{{timerDisplay}}</text>
+            <text class="timer-label">5分钟启动</text>
+          </view>
+        </view>
+      </view>
+      <text class="timer-task">{{task.title}}</text>
+      <view class="timer-hint">专注做，5分钟后问你要不要继续</view>
+      <button class="btn-secondary timer-stop-btn" catchtap="stopTimer">提前结束</button>
+    </view>
+  </view>
+
+  <!-- AI Suggestions Panel -->
+  <view class="ai-mask" wx:if="{{showAiPanel}}" catchtap="closeAiPanel"></view>
+  <view class="ai-panel {{showAiPanel ? 'show' : ''}}">
+    <view class="ai-panel-head">
+      <text class="ai-panel-title">✨ AI 拆解建议</text>
+      <view class="ai-panel-close" catchtap="closeAiPanel">✕</view>
+    </view>
+    <scroll-view class="ai-scroll" scroll-y>
+      <view
+        class="ai-item {{item.selected ? 'selected' : ''}}"
+        wx:for="{{aiSuggestions}}"
+        wx:key="title"
+        catchtap="toggleAiSuggestion"
+        data-index="{{index}}"
+      >
+        <view class="ai-check {{item.selected ? 'checked' : ''}}">
+          <text wx:if="{{item.selected}}" class="check-icon">✓</text>
+        </view>
+        <text class="ai-item-title">{{item.title}}</text>
+        <text class="ai-item-time">{{item.estimatedMinutes}}min</text>
+      </view>
+    </scroll-view>
+    <button class="btn-primary ai-apply-btn" catchtap="applyAiSuggestions" disabled="{{selectedAiCount === 0}}">
+      应用选中的 {{selectedAiCount}} 个步骤
+    </button>
+  </view>
+
+  <!-- Bottom Action Bar -->
+  <view class="action-bar" wx:if="{{task && task.status !== 'completed'}}">
+    <view class="action-btn-quick" catchtap="startQuickTimer">
+      <text class="action-icon">⚡</text>
+      <text class="action-text">5分钟启动</text>
+    </view>
+    <view class="action-btn-secondary" catchtap="onPostpone">
+      <text class="action-icon-sm">⏭</text>
+    </view>
+    <view class="action-btn-secondary action-btn-danger" catchtap="onDelete">
+      <text class="action-icon-sm">🗑</text>
+    </view>
+    <button class="action-btn-done" catchtap="onComplete">完成 ✓</button>
+  </view>
+
+  <!-- Completed state -->
+  <view class="completed-bar" wx:if="{{task && task.status === 'completed'}}">
+    <text>✅ 任务已完成</text>
+  </view>
+</view>

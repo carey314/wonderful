@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "目标详情",
+  "usingComponents": {
+    "task-card": "/components/task-card/task-card"
+  }
+}

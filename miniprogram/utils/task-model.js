@@ -4,6 +4,18 @@
  * 项目分组定义
  * 每个项目带颜色标签，用于前端分组显示
  */
+/**
+ * 卡片类型定义
+ * vision: 长期愿景（3-12个月）
+ * goal: 中期目标（1-3个月）
+ * daily: 每日任务
+ */
+var CARD_TYPES = {
+  vision: { label: '愿景', icon: '🎯', color: '#7C5CFC', defaultCoinReward: 500 },
+  goal:   { label: '目标', icon: '🏁', color: '#3B82F6', defaultCoinReward: 100 },
+  daily:  { label: '任务', icon: '📋', color: '#06D6A0', defaultCoinReward: 10 },
+}
+
 const PROJECT_PRESETS = {
   work:    { label: '工作', icon: '💼', color: '#7C5CFC' },
   study:   { label: '学习', icon: '📚', color: '#3B82F6' },
@@ -54,6 +66,8 @@ function createTask(overrides) {
     category: '',               // V1 分类，保留兼容
 
     // === V2 新增字段 ===
+    cardType: 'daily',          // 卡片类型: vision | goal | daily
+    parentCardId: null,         // 父卡片ID（vision→goal→daily 层级关系）
     project: '',                // 项目分组 key（work/study/life/...）或自定义项目ID
     subtasks: [],               // 子任务数组 [{id, title, completed, estimatedMinutes}]
     deadline: '',               // 截止日期 ISO string 或 '' 表示无截止
@@ -123,7 +137,9 @@ function getTaskProgress(task) {
     return 0
   }
   var done = task.subtasks.filter(function (s) { return s.completed }).length
-  return Math.round((done / task.subtasks.length) * 100)
+  var raw = Math.round((done / task.subtasks.length) * 100)
+  // Endowed Progress Effect: minimum 10% when subtasks exist but none done
+  return done === 0 ? 10 : raw
 }
 
 /**
@@ -222,6 +238,33 @@ function groupByProject(tasks) {
 }
 
 /**
+ * 添加子任务到任务
+ */
+function addSubtaskToTask(task, subtaskData) {
+  var newSub = createSubtask(subtaskData)
+  var subtasks = task.subtasks.concat([newSub])
+  return Object.assign({}, task, { subtasks: subtasks, updatedAt: Date.now() })
+}
+
+/**
+ * 从任务中移除子任务
+ */
+function removeSubtaskFromTask(task, subtaskId) {
+  var subtasks = task.subtasks.filter(function(s) { return s.id !== subtaskId })
+  return Object.assign({}, task, { subtasks: subtasks, updatedAt: Date.now() })
+}
+
+/**
+ * 重新排序子任务
+ */
+function reorderSubtasks(task, fromIndex, toIndex) {
+  var subtasks = task.subtasks.slice()
+  var moved = subtasks.splice(fromIndex, 1)[0]
+  subtasks.splice(toIndex, 0, moved)
+  return Object.assign({}, task, { subtasks: subtasks, updatedAt: Date.now() })
+}
+
+/**
  * 切换子任务完成状态，并返回更新后的任务对象
  */
 function toggleSubtask(task, subtaskId) {
@@ -286,8 +329,31 @@ function smartSort(tasks) {
   })
 }
 
+/**
+ * 计算愿景/目标的完成进度（基于子卡片完成率）
+ * @param {Array} children - 子卡片数组
+ * @returns {{ completed: number, total: number, percentage: number }}
+ */
+function getGoalProgress(children) {
+  if (!children || children.length === 0) return { completed: 0, total: 0, percentage: 0 }
+  var done = children.filter(function (c) { return c.status === 'completed' }).length
+  return {
+    completed: done,
+    total: children.length,
+    percentage: Math.round((done / children.length) * 100),
+  }
+}
+
+/**
+ * 获取卡片类型信息
+ */
+function getCardTypeInfo(cardType) {
+  return CARD_TYPES[cardType] || CARD_TYPES.daily
+}
+
 module.exports = {
   // 常量
+  CARD_TYPES: CARD_TYPES,
   PROJECT_PRESETS: PROJECT_PRESETS,
   DEFAULT_DAILY_CAPACITY: DEFAULT_DAILY_CAPACITY,
 
@@ -308,7 +374,14 @@ module.exports = {
   getProjectInfo: getProjectInfo,
   groupByProject: groupByProject,
 
+  // 目标层级
+  getGoalProgress: getGoalProgress,
+  getCardTypeInfo: getCardTypeInfo,
+
   // 操作函数
+  addSubtaskToTask: addSubtaskToTask,
+  removeSubtaskFromTask: removeSubtaskFromTask,
+  reorderSubtasks: reorderSubtasks,
   toggleSubtask: toggleSubtask,
   isOverdue: isOverdue,
   smartSort: smartSort,

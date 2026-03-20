@@ -4,8 +4,9 @@ const {
   toggleSubtask, PROJECT_PRESETS,
 } = require('../../utils/task-model')
 const storage = require('../../utils/storage')
+const api = require('../../utils/api')
 
-const projectKeys = Object.keys(PROJECT_PRESETS)
+var projectKeys = Object.keys(PROJECT_PRESETS)
 
 Page({
   data: {
@@ -29,62 +30,76 @@ Page({
   },
 
   onLoad() {
+    this._useApi = false
     this.loadTasks()
   },
 
   onShow() {
-    // 每次回到页面从 storage 重新加载
     this.loadTasks()
   },
 
-  // 从本地存储加载所有任务
+  // 加载任务：API 优先，离线降级
   loadTasks() {
-    const allTasks = smartSort(storage.tasks.list())
+    var self = this
+    // 先展示本地数据
+    self._renderAllTasks(smartSort(storage.tasks.list()))
+
+    // 再尝试 API
+    api.cards.list().then(function (tasks) {
+      self._useApi = true
+      self._renderAllTasks(smartSort(tasks))
+    }).catch(function () {
+      self._useApi = false
+    })
+  },
+
+  // 渲染所有任务数据
+  _renderAllTasks(allTasks) {
     this.setData({ allTasks: allTasks })
     this.refreshViews()
   },
 
   // 刷新所有视图数据
   refreshViews() {
-    const allTasks = this.data.allTasks
-    const pendingTasks = allTasks.filter((t) => t.status !== 'completed' && t.status !== 'archived')
-    const completedTasks = allTasks.filter((t) => t.status === 'completed' || t.status === 'archived')
+    var allTasks = this.data.allTasks
+    var pendingTasks = allTasks.filter(function (t) { return t.status !== 'completed' && t.status !== 'archived' })
+    var completedTasks = allTasks.filter(function (t) { return t.status === 'completed' || t.status === 'archived' })
 
     // 四象限
-    const quadrantTasks = {
-      urgentImportant: pendingTasks.filter((t) => t.priority === 'urgent_important'),
-      important: pendingTasks.filter((t) => t.priority === 'important'),
-      urgent: pendingTasks.filter((t) => t.priority === 'urgent'),
-      normal: pendingTasks.filter((t) => t.priority === 'normal'),
+    var quadrantTasks = {
+      urgentImportant: pendingTasks.filter(function (t) { return t.priority === 'urgent_important' }),
+      important: pendingTasks.filter(function (t) { return t.priority === 'important' }),
+      urgent: pendingTasks.filter(function (t) { return t.priority === 'urgent' }),
+      normal: pendingTasks.filter(function (t) { return t.priority === 'normal' }),
     }
 
     // 项目筛选标签
-    const seen = {}
-    const filters = [{ key: 'all', label: '全部', icon: '📋', color: '#7C5CFC', count: pendingTasks.length }]
-    pendingTasks.forEach((t) => {
-      const p = t.project
+    var seen = {}
+    var filters = [{ key: 'all', label: '全部', icon: '📋', color: '#7C5CFC', count: pendingTasks.length }]
+    pendingTasks.forEach(function (t) {
+      var p = t.project
       if (!p) return
       if (seen[p]) { seen[p].count++; return }
-      const info = getProjectInfo(p)
+      var info = getProjectInfo(p)
       seen[p] = { key: p, label: info.label, icon: info.icon, color: info.color, count: 1 }
       filters.push(seen[p])
     })
 
-    this.setData({ pendingTasks, completedTasks, quadrantTasks, projectFilters: filters })
+    this.setData({ pendingTasks: pendingTasks, completedTasks: completedTasks, quadrantTasks: quadrantTasks, projectFilters: filters })
     this.applyFilter()
   },
 
   // 应用项目筛选
   applyFilter() {
-    const key = this.data.activeFilter
-    const pending = this.data.pendingTasks
-    const completed = this.data.completedTasks
+    var key = this.data.activeFilter
+    var pending = this.data.pendingTasks
+    var completed = this.data.completedTasks
     if (key === 'all') {
       this.setData({ filteredPending: pending, filteredCompleted: completed })
     } else {
       this.setData({
-        filteredPending: pending.filter((t) => t.project === key),
-        filteredCompleted: completed.filter((t) => t.project === key),
+        filteredPending: pending.filter(function (t) { return t.project === key }),
+        filteredCompleted: completed.filter(function (t) { return t.project === key }),
       })
     }
   },
@@ -100,45 +115,71 @@ Page({
     this.applyFilter()
   },
 
-  // 任务完成 -> 持久化
+  // 任务完成
   onTaskComplete(e) {
-    const { taskId } = e.detail
-    const result = storage.tasks.complete(taskId)
-    if (!result) return
+    var taskId = e.detail.taskId
+    var self = this
 
-    // 重新从 storage 加载
-    this.loadTasks()
-
-    wx.vibrateShort({ type: 'medium' })
-    wx.showToast({ title: `+${result.coinReward} 金币`, icon: 'none' })
+    if (self._useApi) {
+      api.cards.complete(taskId).then(function (result) {
+        wx.vibrateShort({ type: 'medium' })
+        wx.showToast({ title: '+' + (result.coinReward || 0) + ' 金币', icon: 'none' })
+        self.loadTasks()
+      }).catch(function () {
+        wx.showToast({ title: '操作失败，请重试', icon: 'none' })
+      })
+    } else {
+      var result = storage.tasks.complete(taskId)
+      if (!result) return
+      self._renderAllTasks(smartSort(storage.tasks.list()))
+      wx.vibrateShort({ type: 'medium' })
+      wx.showToast({ title: '+' + result.coinReward + ' 金币', icon: 'none' })
+    }
   },
 
-  // 子任务勾选 -> 持久化
+  // 子任务勾选
   onSubtaskToggle(e) {
-    const { taskId, updatedTask } = e.detail
-    storage.tasks.update(taskId, {
-      subtasks: updatedTask.subtasks,
-      status: updatedTask.status,
-      updatedAt: updatedTask.updatedAt,
-    })
+    var taskId = e.detail.taskId
+    var updatedTask = e.detail.updatedTask
+    var self = this
 
-    // 如果子任务全部完成导致主任务完成
-    if (updatedTask.status === 'completed') {
-      var task = storage.tasks.get(taskId)
-      if (task) {
-        storage.coins.add(task.coinReward || 0)
-        storage.stats.logCompletion(taskId, task.coinReward || 0, task.estimatedMinutes || 0)
-        storage.streak.update()
-        wx.vibrateShort({ type: 'medium' })
-        wx.showToast({ title: `+${task.coinReward || 0} 金币`, icon: 'none' })
+    if (self._useApi) {
+      api.cards.update(taskId, {
+        subtasks: updatedTask.subtasks,
+        status: updatedTask.status,
+      }).then(function () {
+        if (updatedTask.status === 'completed') {
+          self.loadTasks()
+        }
+      }).catch(function () {})
+    } else {
+      storage.tasks.update(taskId, {
+        subtasks: updatedTask.subtasks,
+        status: updatedTask.status,
+        updatedAt: updatedTask.updatedAt,
+      })
+      if (updatedTask.status === 'completed') {
+        var task = storage.tasks.get(taskId)
+        if (task) {
+          storage.coins.add(task.coinReward || 0)
+          storage.stats.logCompletion(taskId, task.coinReward || 0, task.estimatedMinutes || 0)
+          storage.streak.update()
+          wx.vibrateShort({ type: 'medium' })
+          wx.showToast({ title: '+' + (task.coinReward || 0) + ' 金币', icon: 'none' })
+        }
+        self._renderAllTasks(smartSort(storage.tasks.list()))
+        return
       }
-      this.loadTasks()
-      return
     }
 
-    const allTasks = this.data.allTasks.map((t) => t.id === taskId ? updatedTask : t)
-    this.setData({ allTasks: allTasks })
-    this.refreshViews()
+    // 乐观更新 UI
+    if (updatedTask.status !== 'completed') {
+      var allTasks = self.data.allTasks.map(function (t) {
+        return t.id === taskId ? updatedTask : t
+      })
+      self.setData({ allTasks: allTasks })
+      self.refreshViews()
+    }
   },
 
   // 跳过
@@ -146,10 +187,31 @@ Page({
     wx.showToast({ title: '换个角度想想~', icon: 'none' })
   },
 
+  // 左滑推迟
+  onTaskPostpone: function (e) {
+    var taskId = e.detail.taskId
+    var self = this
+    if (self._useApi) {
+      api.cards.postpone(taskId).then(function () {
+        wx.showToast({ title: '已推迟到明天', icon: 'none' })
+        self.loadTasks()
+      }).catch(function () {
+        wx.showToast({ title: '操作失败', icon: 'none' })
+      })
+    } else {
+      var task = storage.tasks.get(taskId)
+      if (task) {
+        storage.tasks.update(taskId, { postponedCount: (task.postponedCount || 0) + 1 })
+      }
+      wx.showToast({ title: '已推迟到明天', icon: 'none' })
+      self._renderAllTasks(smartSort(storage.tasks.list()))
+    }
+  },
+
   // 点击任务详情
   onTaskDetail(e) {
-    const id = e.detail && e.detail.taskId ? e.detail.taskId : e.currentTarget.dataset.id
-    wx.showToast({ title: '任务详情开发中', icon: 'none' })
+    var id = e.detail && e.detail.taskId ? e.detail.taskId : e.currentTarget.dataset.id
+    wx.navigateTo({ url: '/pages/task-detail/task-detail?id=' + id })
   },
 
   // 添加新任务

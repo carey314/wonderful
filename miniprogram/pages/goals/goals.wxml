@@ -1,0 +1,106 @@
+<!-- 目标页 — 愿景/目标层级 -->
+<view class="container goals-page">
+
+  <!-- 标题 -->
+  <view class="page-header anim-float-in">
+    <text class="page-title">我的目标</text>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar anim-float-in anim-delay-1">
+    <view class="tab-item {{activeTab === 'vision' ? 'active' : ''}}" bindtap="onTabSwitch" data-tab="vision">
+      <text class="tab-icon">🎯</text>
+      <text class="tab-text">愿景</text>
+      <text class="tab-count" wx:if="{{visions.length > 0}}">{{visions.length}}</text>
+    </view>
+    <view class="tab-item {{activeTab === 'goal' ? 'active' : ''}}" bindtap="onTabSwitch" data-tab="goal">
+      <text class="tab-icon">🏁</text>
+      <text class="tab-text">目标</text>
+      <text class="tab-count" wx:if="{{goals.length > 0}}">{{goals.length}}</text>
+    </view>
+  </view>
+
+  <!-- 愿景视图 -->
+  <view wx:if="{{activeTab === 'vision'}}">
+    <view class="vision-list" wx:if="{{visionTree.length > 0}}">
+      <view class="vision-card anim-float-in" wx:for="{{visionTree}}" wx:key="vision.id" bindtap="onVisionTap" data-id="{{item.vision.id}}">
+        <!-- 愿景头部 -->
+        <view class="vision-header">
+          <text class="vision-title">🎯 {{item.vision.title}}</text>
+          <view class="vision-status {{item.vision.status}}">
+            <text wx:if="{{item.vision.status === 'completed'}}">✅</text>
+            <text wx:elif="{{item.vision.status === 'in_progress'}}">🔄</text>
+            <text wx:else>⏳</text>
+          </view>
+        </view>
+        <text class="vision-desc" wx:if="{{item.vision.description}}">{{item.vision.description}}</text>
+
+        <!-- 进度条 -->
+        <view class="vision-progress">
+          <view class="progress-track">
+            <view class="progress-bar" style="width: {{item.progress.percentage}}%">
+              <view class="progress-glow" wx:if="{{item.progress.percentage > 0}}"></view>
+            </view>
+          </view>
+          <text class="progress-text">{{item.progress.completed}}/{{item.progress.total}} 目标  {{item.progress.percentage}}%</text>
+        </view>
+
+        <!-- 子目标预览 -->
+        <view class="vision-children" wx:if="{{item.children.length > 0}}">
+          <view class="child-row" wx:for="{{item.children}}" wx:for-item="child" wx:key="id" catchtap="onGoalTap" data-id="{{child.id}}">
+            <text class="child-status">{{child.status === 'completed' ? '✅' : child.status === 'in_progress' ? '🔄' : '⏳'}}</text>
+            <text class="child-title {{child.status === 'completed' ? 'done' : ''}}">{{child.title}}</text>
+          </view>
+        </view>
+
+        <!-- 截止日期 -->
+        <view class="vision-meta" wx:if="{{item.vision.deadline || item.vision.due_date}}">
+          <text class="meta-label">📅 {{item.vision.deadline || item.vision.due_date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{visionTree.length === 0 && !loading}}">
+      <text class="empty-emoji">🎯</text>
+      <text class="empty-title">还没有长期愿景</text>
+      <text class="empty-desc">设定一个 3-12 个月的大目标，AI 帮你拆解成可执行的里程碑</text>
+    </view>
+
+    <!-- 新建按钮 -->
+    <view class="add-btn-wrap">
+      <button class="add-btn" bindtap="onAddVision">+ 新建愿景</button>
+    </view>
+  </view>
+
+  <!-- 目标视图 -->
+  <view wx:if="{{activeTab === 'goal'}}">
+    <view class="goal-list" wx:if="{{goals.length > 0}}">
+      <view class="goal-card anim-float-in" wx:for="{{goals}}" wx:key="id" bindtap="onGoalTap" data-id="{{item.id}}">
+        <view class="goal-header">
+          <text class="goal-title">🏁 {{item.title}}</text>
+          <text class="goal-status-badge {{item.status}}">
+            {{item.status === 'completed' ? '已完成' : item.status === 'in_progress' ? '进行中' : '待开始'}}
+          </text>
+        </view>
+        <text class="goal-desc" wx:if="{{item.description}}">{{item.description}}</text>
+        <view class="goal-meta">
+          <text class="meta-label" wx:if="{{item.deadline || item.due_date}}">📅 {{item.deadline || item.due_date}}</text>
+          <text class="meta-label" wx:if="{{item.coinReward || item.coin_reward}}">✨ {{item.coinReward || item.coin_reward}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{goals.length === 0 && !loading}}">
+      <text class="empty-emoji">🏁</text>
+      <text class="empty-title">还没有中期目标</text>
+      <text class="empty-desc">从愿景中拆解，或直接创建一个 1-3 个月的里程碑</text>
+    </view>
+
+    <view class="add-btn-wrap">
+      <button class="add-btn" bindtap="onAddGoal">+ 新建目标</button>
+    </view>
+  </view>
+
+</view>

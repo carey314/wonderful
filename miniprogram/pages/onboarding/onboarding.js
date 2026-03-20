@@ -1,9 +1,12 @@
 // Onboarding 引导流程
 const storage = require('../../utils/storage')
+const api = require('../../utils/api')
 const { createTask } = require('../../utils/task-model')
+const { getNavPaddingTop } = require('../../utils/util')
 
 Page({
   data: {
+    navPaddingTop: 120,
     step: 1,
     nickname: '',
     wakeTime: '08:00',
@@ -27,6 +30,10 @@ Page({
       '做了 {task} 的你，比没做的你多了一个可能性。这个可能性值多少钱？说不好，但肯定比你今天刷手机两小时值钱。',
       '{task} 这件事，你做了 = 比 99% 只想不做的人强。这不是在给自己加压，是在给未来的自己多一个退路。',
     ],
+  },
+
+  onLoad() {
+    this.setData({ navPaddingTop: getNavPaddingTop() })
   },
 
   // 进入下一步
@@ -111,13 +118,23 @@ Page({
     // 初始化存储层
     storage.init()
 
-    // 如果用户输入了第一个任务，持久化保存
-    if (this.data.firstTask && this.data.firstTask.trim()) {
-      const task = createTask({
-        title: this.data.firstTask.trim(),
-        estimatedMinutes: this.data.firstTaskDuration || 30,
+    // 触发静默登录
+    app.autoLogin()
+
+    // 如果用户输入了第一个任务，登录成功后保存到 API
+    var firstTask = this.data.firstTask
+    var firstTaskDuration = this.data.firstTaskDuration
+    if (firstTask && firstTask.trim()) {
+      var task = createTask({
+        title: firstTask.trim(),
+        estimatedMinutes: firstTaskDuration || 30,
       })
-      storage.tasks.create(task)
+      app.onLoginReady(function () {
+        api.cards.create(task).catch(function () {
+          // API 失败，降级到本地存储
+          storage.tasks.create(task)
+        })
+      })
     }
 
     // 跳转首页

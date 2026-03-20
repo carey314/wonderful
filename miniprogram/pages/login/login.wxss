@@ -1,0 +1,82 @@
+/* Login - 沉浸式登录页 */
+.login-page {
+  min-height: 100vh;
+  background: var(--gradient-mesh);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 48rpx 80rpx;
+  animation: float-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 问候区域 */
+.greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 80rpx;
+}
+
+.greeting-line {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 16rpx;
+}
+
+.greeting-sub {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+}
+
+/* 登录按钮 */
+.login-btn {
+  width: 80%;
+  margin-top: 80rpx;
+  font-size: 34rpx;
+  padding: 30rpx 0;
+}
+
+.login-btn[disabled] {
+  opacity: 0.7;
+}
+
+/* 跳过按钮 */
+.skip-btn {
+  margin-top: 32rpx;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  background: transparent;
+  padding: 16rpx 32rpx;
+}
+
+.skip-btn:active {
+  opacity: 0.6;
+}
+
+/* 底部 slogan */
+.login-slogan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 80rpx;
+}
+
+.login-slogan .slogan-line {
+  font-size: 32rpx;
+  color: var(--color-text-secondary);
+  line-height: 2.2;
+  letter-spacing: 2rpx;
+}
+
+/* 动画关键帧已在 app.wxss 中全局定义 */

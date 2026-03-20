@@ -14,7 +14,9 @@ from app.database import get_db
 from app.prompts.templates import (
     SYSTEM_ROLE, MORNING_PROMPT, EVENING_PROMPT,
     MINDSET_SHIFT_PROMPT, CHAT_PROMPT, COMEBACK_PROMPT,
+    DECOMPOSE_VISION_PROMPT, DECOMPOSE_GOAL_PROMPT,
 )
+from app.services.card_service import get_card
 
 router = APIRouter(prefix="/api/ai", tags=["AI 对话"])
 
@@ -137,6 +139,87 @@ async def mindset_shift(
     return AIChatResponse(
         message=ai_response,
         conversation_type="mindset",
+    )
+
+
+@router.post("/decompose", response_model=AIChatResponse, summary="AI 目标拆解")
+async def ai_decompose(
+    request: ChatRequest,
+    user_id: int = Depends(get_current_user_id),
+):
+    """
+    AI 拆解目标：
+    - message 格式: "card_id:{id}" — 根据卡片类型自动选择拆解方式
+    - vision → 拆成 goals
+    - goal → 拆成 daily tasks
+    返回 suggested_cards 列表，前端确认后批量创建
+    """
+    import json as json_lib
+
+    # 解析 card_id
+    card_id = None
+    if request.message.startswith("card_id:"):
+        try:
+            card_id = int(request.message.split(":")[1])
+        except (ValueError, IndexError):
+            pass
+
+    if card_id:
+        card = get_card(card_id, user_id)
+    else:
+        card = None
+
+    if not card:
+        return AIChatResponse(
+            message="未找到对应的卡片",
+            conversation_type="chat",
+            suggested_cards=[],
+        )
+
+    card_type = card.get("card_type", "daily")
+    parent_title = ""
+
+    if card_type == "vision":
+        prompt = DECOMPOSE_VISION_PROMPT.format(
+            title=card["title"],
+            description=card.get("description", ""),
+            deadline=card.get("due_date", "未设定"),
+        )
+    elif card_type == "goal":
+        # 获取父愿景标题
+        parent_id = card.get("parent_card_id")
+        if parent_id:
+            parent = get_card(parent_id, user_id)
+            parent_title = parent["title"] if parent else ""
+        prompt = DECOMPOSE_GOAL_PROMPT.format(
+            title=card["title"],
+            description=card.get("description", ""),
+            parent_title=parent_title or "未关联愿景",
+        )
+    else:
+        return AIChatResponse(
+            message="每日任务不需要拆解，可以在任务详情页添加子步骤",
+            conversation_type="chat",
+            suggested_cards=[],
+        )
+
+    ai_response = await call_ai(SYSTEM_ROLE, prompt, temperature=0.7)
+
+    # 尝试解析 JSON
+    suggested = []
+    try:
+        json_match = __import__("re").search(r"\[[\s\S]*\]", ai_response)
+        if json_match:
+            suggested = json_lib.loads(json_match.group())
+    except (json_lib.JSONDecodeError, AttributeError):
+        pass
+
+    _save_conversation(user_id, "chat", f"拆解{card_type}: {card['title']}", ai_response)
+
+    return AIChatResponse(
+        message=ai_response,
+        conversation_type="chat",
+        suggested_cards=suggested,
     )
 
 
