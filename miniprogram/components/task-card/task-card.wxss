@@ -100,9 +100,33 @@
   letter-spacing: -0.5rpx;
 }
 
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.title-row .task-title {
+  flex: 1;
+}
+
 .task-title.done {
   text-decoration: line-through;
   color: #A5A5C0;
+}
+
+.postpone-badge {
+  flex-shrink: 0;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 107, 107, 0.12);
+  margin-top: 4rpx;
+}
+
+.postpone-badge text {
+  font-size: 20rpx;
+  color: #FF6B6B;
+  font-weight: 600;
 }
 
 /* ====== 子任务直接可见 ====== */

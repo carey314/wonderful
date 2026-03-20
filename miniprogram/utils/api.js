@@ -9,11 +9,14 @@ var _loginPromise = null
  * @param {string} url - 请求路径
  * @param {string} method - 请求方法
  * @param {object} data - 请求数据
- * @param {boolean} _isRetry - 是否为重试请求（内部使用）
+ * @param {object} _opts - 内部选项 { isRetry, retryCount }
  */
-function request(url, method, data, _isRetry) {
+function request(url, method, data, _opts) {
   if (method === undefined) method = 'GET'
   if (data === undefined) data = {}
+  if (!_opts) _opts = {}
+  var retryCount = _opts.retryCount || 0
+  var maxRetries = 2
 
   var app = getApp()
   var baseUrl = (app && app.globalData && app.globalData.baseUrl) || 'http://122.51.1.28/wonderful-api'
@@ -24,6 +27,7 @@ function request(url, method, data, _isRetry) {
       url: baseUrl + url,
       method: method,
       data: data,
+      timeout: 15000,
       header: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token,
@@ -31,14 +35,29 @@ function request(url, method, data, _isRetry) {
       success: function (res) {
         if (res.statusCode === 200) {
           resolve(res.data)
-        } else if (res.statusCode === 401 && !_isRetry) {
-          // token 过期，自动重新登录后重试
+        } else if (res.statusCode === 401 && !_opts.isRetry) {
           _handleUnauthorized(url, method, data, resolve, reject)
+        } else if (res.statusCode >= 500 && retryCount < maxRetries) {
+          // 服务端错误自动重试
+          setTimeout(function () {
+            request(url, method, data, { retryCount: retryCount + 1 })
+              .then(resolve).catch(reject)
+          }, 1000 * (retryCount + 1))
         } else {
-          reject(new Error((res.data && res.data.detail) || '请求失败'))
+          reject(new Error((res.data && res.data.detail) || '请求失败 (' + res.statusCode + ')'))
         }
       },
-      fail: reject,
+      fail: function (err) {
+        // 网络错误自动重试
+        if (retryCount < maxRetries) {
+          setTimeout(function () {
+            request(url, method, data, { retryCount: retryCount + 1 })
+              .then(resolve).catch(reject)
+          }, 1000 * (retryCount + 1))
+        } else {
+          reject(new Error(err.errMsg || '网络连接失败'))
+        }
+      },
     })
   })
 }
@@ -77,7 +96,7 @@ function _handleUnauthorized(url, method, data, resolve, reject) {
 
   // 所有 401 请求都等待同一个登录 Promise，然后重试
   _loginPromise.then(function () {
-    request(url, method, data, true).then(resolve).catch(reject)
+    request(url, method, data, { isRetry: true }).then(resolve).catch(reject)
   }).catch(function () {
     reject(new Error('登录过期'))
   })

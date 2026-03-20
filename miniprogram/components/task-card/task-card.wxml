@@ -19,7 +19,12 @@
     </view>
 
     <!-- 标题 -->
-    <text class="task-title {{completed ? 'done' : ''}}">{{task.title}}</text>
+    <view class="title-row">
+      <text class="task-title {{completed ? 'done' : ''}}">{{task.title}}</text>
+      <view class="postpone-badge" wx:if="{{showPostponeWarning}}">
+        <text>推迟{{postponedCount}}次</text>
+      </view>
+    </view>
 
     <!-- 子任务直接可见（前3个） -->
     <view class="subtask-face" wx:if="{{hasSubtasks && !completed}}">

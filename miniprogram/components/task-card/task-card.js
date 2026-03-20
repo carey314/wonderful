@@ -48,6 +48,7 @@ Component({
       if (!task) return
       var subs = task.subtasks || []
       var hasSubtasks = subs.length > 0
+      var postponedCount = task.postponedCount || 0
       this.setData({
         hasSubtasks: hasSubtasks,
         progress: getTaskProgress(task),
@@ -58,6 +59,9 @@ Component({
         projectInfo: getProjectInfo(task.project),
         deadlineText: formatDeadline(task.deadline),
         overdue: isOverdue(task),
+        // 推迟可视化
+        postponedCount: postponedCount,
+        showPostponeWarning: postponedCount >= 3,
       })
     },
   },
@@ -84,9 +88,7 @@ Component({
         subtaskId: subtaskId,
         updatedTask: updatedTask,
       })
-      if (updatedTask.subtasks.every(function (s) { return s.completed })) {
-        this.triggerEvent('complete', { taskId: task.id })
-      }
+      // 不再自动触发 complete，由父页面处理 _allSubtasksDone 弹窗
     },
   },
 })
