@@ -277,10 +277,9 @@ function toggleSubtask(task, subtaskId) {
     }),
     updatedAt: Date.now(),
   })
-  // 所有子任务完成 → 自动标记主任务完成
-  if (updated.subtasks.length > 0 && updated.subtasks.every(function (s) { return s.completed })) {
-    updated.status = 'completed'
-  }
+  // 标记所有子任务是否全部完成（由 UI 层决定是否弹窗确认）
+  updated._allSubtasksDone = updated.subtasks.length > 0 &&
+    updated.subtasks.every(function (s) { return s.completed })
   return updated
 }
 

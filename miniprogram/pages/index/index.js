@@ -78,8 +78,22 @@ Page({
   },
 
   onShow() {
-    this.loadTodayData()
-    this.loadActiveGoals()
+    // 检查数据是否有变更，避免不必要的重渲染
+    var lastVersion = this._dataVersion || 0
+    var currentVersion = wx.getStorageSync('_data_version') || 0
+    if (currentVersion !== lastVersion || !this._loaded) {
+      this._dataVersion = currentVersion
+      this._loaded = true
+      this.loadTodayData()
+      this.loadActiveGoals()
+    } else {
+      // 仅更新金币和连续天数（轻量）
+      var app = getApp()
+      this.setData({
+        coins: formatCoins(app.globalData.coins || storage.coins.get()),
+        streakDays: app.globalData.streakDays || storage.streak.get(),
+      })
+    }
   },
 
   // 加载今日数据：API 优先，离线降级到本地存储
@@ -197,56 +211,40 @@ Page({
     var updatedTask = e.detail.updatedTask
     var self = this
 
+    // 先保存子任务状态变更
     if (self._useApi) {
-      if (updatedTask.status === 'completed') {
-        // Save subtask changes only, then use /complete endpoint for coins
-        api.cards.update(taskId, { subtasks: updatedTask.subtasks }).then(function () {
-          return api.cards.complete(taskId)
-        }).then(function (result) {
-          wx.vibrateShort({ type: 'medium' })
-          wx.showToast({ title: '+' + (result.coinReward || 0) + ' 金币', icon: 'none' })
-          var app = getApp()
-          if (app && result.coinReward) {
-            app.globalData.coins = (app.globalData.coins || 0) + result.coinReward
-          }
-          self.loadTodayData()
-        }).catch(function () {
-          self.loadTodayData()
-        })
-        return
-      }
       api.cards.update(taskId, {
         subtasks: updatedTask.subtasks,
-        status: updatedTask.status,
       }).catch(function () {})
-    } else {
-      storage.tasks.update(taskId, {
-        subtasks: updatedTask.subtasks,
-        status: updatedTask.status,
-        updatedAt: updatedTask.updatedAt,
-      })
-      if (updatedTask.status === 'completed') {
-        var task = storage.tasks.get(taskId)
-        if (task) {
-          storage.coins.add(task.coinReward || 0)
-          storage.stats.logCompletion(taskId, task.coinReward || 0, task.estimatedMinutes || 0)
-          storage.streak.update()
-          wx.vibrateShort({ type: 'medium' })
-          wx.showToast({ title: '+' + (task.coinReward || 0) + ' 金币', icon: 'none' })
-        }
-        self._renderTasks(storage.tasks.today())
-        return
-      }
     }
+    storage.tasks.update(taskId, {
+      subtasks: updatedTask.subtasks,
+      updatedAt: updatedTask.updatedAt,
+    })
 
     // 乐观更新 UI
-    if (updatedTask.status !== 'completed') {
-      var todayTasks = self.data.todayTasks.map(function (t) {
-        return t.id === taskId ? updatedTask : t
+    var todayTasks = self.data.todayTasks.map(function (t) {
+      return t.id === taskId ? updatedTask : t
+    })
+    self.setData({ todayTasks: todayTasks })
+    self.updateCapacity(todayTasks)
+    self.applyFilter()
+
+    // 所有子任务完成 → 弹窗询问
+    if (updatedTask._allSubtasksDone) {
+      var reward = updatedTask.coinReward || 10
+      wx.showModal({
+        title: '所有步骤已完成 🎉',
+        content: '要把整个任务也标记为完成吗？\n完成可获得 +' + reward + ' 金币',
+        confirmText: '完成任务',
+        cancelText: '暂不',
+        confirmColor: '#7C5CFC',
+        success: function (res) {
+          if (res.confirm) {
+            self.onTaskComplete({ detail: { taskId: taskId } })
+          }
+        },
       })
-      self.setData({ todayTasks: todayTasks })
-      self.updateCapacity(todayTasks)
-      self.applyFilter()
     }
   },
 
@@ -264,19 +262,50 @@ Page({
   onTaskPostpone: function (e) {
     var taskId = e.detail.taskId
     var self = this
+    var task = storage.tasks.get(taskId)
+    var postponedCount = task ? (task.postponedCount || 0) + 1 : 1
+
+    // 推迟 >= 3 次：温和提醒
+    if (postponedCount >= 3) {
+      var messages = [
+        '这个任务已经推迟 ' + postponedCount + ' 次了',
+        '试试把它拆成更小的步骤？\n或者降低预期，先做5分钟就好。',
+      ]
+      wx.showModal({
+        title: '又见面了 😊',
+        content: messages.join('\n'),
+        confirmText: '还是推迟',
+        cancelText: '试试拆解',
+        confirmColor: '#999',
+        success: function (res) {
+          if (res.confirm) {
+            self._doPostpone(taskId, postponedCount)
+          } else {
+            // 跳转到任务详情页，引导拆解
+            wx.navigateTo({ url: '/pages/task-detail/task-detail?id=' + taskId })
+          }
+        },
+      })
+      return
+    }
+
+    self._doPostpone(taskId, postponedCount)
+  },
+
+  _doPostpone: function (taskId, postponedCount) {
+    var self = this
     if (self._useApi) {
       api.cards.postpone(taskId).then(function () {
-        wx.showToast({ title: '已推迟到明天', icon: 'none' })
+        var tip = postponedCount >= 2 ? '已推迟到明天（第' + postponedCount + '次）' : '已推迟到明天'
+        wx.showToast({ title: tip, icon: 'none' })
         self.loadTodayData()
       }).catch(function () {
         wx.showToast({ title: '操作失败', icon: 'none' })
       })
     } else {
-      var task = storage.tasks.get(taskId)
-      if (task) {
-        storage.tasks.update(taskId, { postponedCount: (task.postponedCount || 0) + 1 })
-      }
-      wx.showToast({ title: '已推迟到明天', icon: 'none' })
+      storage.tasks.update(taskId, { postponedCount: postponedCount })
+      var tip = postponedCount >= 2 ? '已推迟到明天（第' + postponedCount + '次）' : '已推迟到明天'
+      wx.showToast({ title: tip, icon: 'none' })
       self._renderTasks(storage.tasks.today())
     }
   },
@@ -365,6 +394,7 @@ Page({
     var todayKey = 'mood_' + now.getFullYear() + '_' + now.getMonth() + '_' + now.getDate()
 
     wx.setStorageSync(todayKey, value)
+    storage.mood.save(value)
     wx.vibrateShort({ type: 'medium' })
 
     this.setData({

@@ -29,6 +29,11 @@ function _get(key, defaultValue) {
 function _set(key, value) {
   try {
     wx.setStorageSync(key, value)
+    // 任务数据变更时自增版本号，用于 onShow 脏检查
+    if (key === KEYS.TASKS || key === KEYS.COMPLETED_LOG) {
+      var v = (wx.getStorageSync('_data_version') || 0) + 1
+      wx.setStorageSync('_data_version', v)
+    }
   } catch (e) {
     console.error('storage write failed:', key, e)
   }
@@ -377,6 +382,36 @@ function toggleMindsetCollect(shiftId) {
 }
 
 // ========================
+// 情绪签到
+// ========================
+
+function saveMood(value) {
+  var now = new Date()
+  var todayKey = 'mood_' + now.getFullYear() + '_' + now.getMonth() + '_' + now.getDate()
+  _set(todayKey, value)
+
+  // 同时存一份可聚合的周数据
+  var weekKey = 'mood_week_' + _getWeekId(now)
+  var weekMoods = _get(weekKey, [])
+  // 同一天只记一条，覆盖
+  var dayIndex = now.getDay() || 7 // 1=周一 ... 7=周日
+  weekMoods[dayIndex - 1] = { day: dayIndex, value: value, date: now.toISOString().slice(0, 10) }
+  _set(weekKey, weekMoods)
+}
+
+function getWeekMoods() {
+  var now = new Date()
+  var weekKey = 'mood_week_' + _getWeekId(now)
+  return _get(weekKey, [])
+}
+
+function _getWeekId(date) {
+  var startOfYear = new Date(date.getFullYear(), 0, 1)
+  var weekNum = Math.ceil(((date - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7)
+  return date.getFullYear() + '_w' + weekNum
+}
+
+// ========================
 // 调试
 // ========================
 
@@ -443,6 +478,11 @@ module.exports = {
     getState: getMindsetState,
     toggleLike: toggleMindsetLike,
     toggleCollect: toggleMindsetCollect,
+  },
+
+  mood: {
+    save: saveMood,
+    getWeek: getWeekMoods,
   },
 
   getStorageInfo: getStorageInfo,

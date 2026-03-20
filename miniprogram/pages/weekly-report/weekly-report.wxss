@@ -306,3 +306,44 @@
   width: 100% !important;
   font-size: 30rpx !important;
 }
+
+/* 情绪趋势 */
+.chart-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.mood-avg {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+.mood-track {
+  display: flex;
+  justify-content: space-around;
+}
+
+.mood-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.mood-emoji {
+  font-size: 40rpx;
+  height: 52rpx;
+  line-height: 52rpx;
+}
+
+.mood-empty {
+  opacity: 0.3;
+  font-size: 32rpx;
+}
+
+.mood-day-label {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+}

@@ -133,24 +133,26 @@ Page({
   onToggleSubtask(e) {
     var subtaskId = e.currentTarget.dataset.id
     var task = toggleSubtask(this.data.task, subtaskId)
+    var self = this
 
-    // toggleSubtask auto-sets status='completed' when all done
-    // If so, save subtask changes only, then use the complete flow (awards coins)
-    if (task.status === 'completed') {
-      this._setTask(task)
-      storage.tasks.update(this._taskId, {
-        subtasks: task.subtasks,
-        updatedAt: task.updatedAt,
-      })
-      if (this._useApi) {
-        // Save subtask state without status change, then hit /complete for coins
-        api.cards.update(this._taskId, { subtasks: task.subtasks }).catch(function () {})
-      }
-      this.onComplete()
-      return
-    }
-
+    // 先保存子任务状态
     this._saveTask(task)
+
+    // 所有子任务完成 → 弹窗询问是否标记主任务完成
+    if (task._allSubtasksDone) {
+      wx.showModal({
+        title: '所有步骤已完成 🎉',
+        content: '要把整个任务也标记为完成吗？\n完成可获得 +' + (task.coinReward || 10) + ' 金币',
+        confirmText: '完成任务',
+        cancelText: '暂不',
+        confirmColor: '#7C5CFC',
+        success: function (res) {
+          if (res.confirm) {
+            self.onComplete()
+          }
+        },
+      })
+    }
   },
 
   removeSubtask(e) {
@@ -412,19 +414,46 @@ Page({
 
   onPostpone() {
     var self = this
+    var task = self.data.task
+    var postponedCount = (task.postponedCount || 0) + 1
+
+    // 推迟 >= 3 次：温和拖延提醒
+    if (postponedCount >= 3) {
+      wx.showModal({
+        title: '又推迟了 😊',
+        content: '这个任务已经推迟 ' + postponedCount + ' 次了。\n\n试试：\n· 把它拆成更小的步骤\n· 先启动5分钟计时器\n· 降低完美标准，能做多少算多少',
+        confirmText: '还是推迟',
+        cancelText: '试试5分钟',
+        confirmColor: '#999',
+        success: function (res) {
+          if (res.confirm) {
+            self._doPostpone(postponedCount)
+          } else {
+            // 启动5分钟计时器
+            self.startQuickTimer()
+          }
+        },
+      })
+      return
+    }
+
+    self._doPostpone(postponedCount)
+  },
+
+  _doPostpone(postponedCount) {
+    var self = this
     if (self._useApi) {
-      api.cards.postpone(self._taskId).then(function (result) {
-        var count = (result && result.data && result.data.postponedCount) || 0
-        wx.showToast({ title: '已推迟到明天' + (count >= 3 ? '（第' + count + '次）' : ''), icon: 'none' })
+      api.cards.postpone(self._taskId).then(function () {
+        var tip = postponedCount >= 2 ? '已推迟到明天（第' + postponedCount + '次）' : '已推迟到明天'
+        wx.showToast({ title: tip, icon: 'none' })
         setTimeout(function () { wx.navigateBack() }, 800)
       }).catch(function () {
         wx.showToast({ title: '操作失败', icon: 'none' })
       })
     } else {
-      var task = self.data.task
-      var postponedCount = (task.postponedCount || 0) + 1
       storage.tasks.update(self._taskId, { postponedCount: postponedCount })
-      wx.showToast({ title: '已推迟到明天', icon: 'none' })
+      var tip = postponedCount >= 2 ? '已推迟到明天（第' + postponedCount + '次）' : '已推迟到明天'
+      wx.showToast({ title: tip, icon: 'none' })
       setTimeout(function () { wx.navigateBack() }, 800)
     }
   },

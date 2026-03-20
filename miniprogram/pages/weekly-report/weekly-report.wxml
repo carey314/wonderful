@@ -52,6 +52,20 @@
     </view>
   </view>
 
+  <!-- 情绪趋势 -->
+  <view class="chart-card card anim-float-in anim-delay-3" wx:if="{{moodDays && moodDays.length > 0}}">
+    <view class="chart-title-row">
+      <text class="chart-title">本周心情</text>
+      <text class="mood-avg" wx:if="{{stats.avgMood !== '--'}}">平均 {{stats.avgMood}}/5</text>
+    </view>
+    <view class="mood-track">
+      <view class="mood-day" wx:for="{{moodDays}}" wx:key="day">
+        <text class="mood-emoji {{item.hasData ? '' : 'mood-empty'}}">{{item.emoji}}</text>
+        <text class="mood-day-label">{{item.day}}</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 详细数据 -->
   <view class="detail-card card anim-float-in anim-delay-3">
     <view class="detail-row">

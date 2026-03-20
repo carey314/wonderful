@@ -66,8 +66,30 @@ Page({
       }
     })
 
+    // 情绪趋势
+    const weekMoods = storage.mood.getWeek()
+    const moodMap = {
+      great: { emoji: '😆', score: 5 },
+      good: { emoji: '😊', score: 4 },
+      normal: { emoji: '😐', score: 3 },
+      low: { emoji: '😔', score: 2 },
+      angry: { emoji: '😤', score: 1 },
+      stressed: { emoji: '😰', score: 1 },
+    }
+    const moodDays = dayNames.map(function (name, i) {
+      var m = weekMoods[i]
+      if (m && m.value && moodMap[m.value]) {
+        return { day: name, emoji: moodMap[m.value].emoji, score: moodMap[m.value].score, hasData: true }
+      }
+      return { day: name, emoji: '·', score: 0, hasData: false }
+    })
+    const moodScores = moodDays.filter(function (d) { return d.hasData })
+    const avgMood = moodScores.length > 0
+      ? (moodScores.reduce(function (s, d) { return s + d.score }, 0) / moodScores.length).toFixed(1)
+      : '--'
+
     // 本周亮点
-    const highlights = this.generateHighlights(tasksCompleted, streakDays, completionRate)
+    const highlights = this.generateHighlights(tasksCompleted, streakDays, completionRate, moodScores)
 
     this.setData({
       weekNum: weekNum,
@@ -80,22 +102,30 @@ Page({
         bestTimeSlot: '待统计',
         totalMinutes: totalMinutes,
         beatPercent: 0,
+        avgMood: avgMood,
       },
       dailyBars: dailyBars,
+      moodDays: moodDays,
       highlights: highlights,
     })
   },
 
   // 生成本周亮点
-  generateHighlights(tasks, streak, rate) {
+  generateHighlights(tasks, streak, rate, moodScores) {
     var highlights = []
     if (tasks > 0) highlights.push({ icon: '🏆', text: '本周完成了 ' + tasks + ' 个任务' })
     if (streak > 0) highlights.push({ icon: '🔥', text: '连续打卡 ' + streak + ' 天' })
     if (rate > 0) highlights.push({ icon: '📈', text: '总完成率 ' + rate + '%' })
+    // 情绪相关亮点
+    if (moodScores && moodScores.length >= 3) {
+      var avg = moodScores.reduce(function (s, d) { return s + d.score }, 0) / moodScores.length
+      if (avg >= 4) highlights.push({ icon: '😊', text: '本周心情很不错，保持！' })
+      else if (avg <= 2) highlights.push({ icon: '🤗', text: '这周辛苦了，记得对自己好一点' })
+    }
     if (highlights.length === 0) {
       highlights.push({ icon: '🌱', text: '本周刚开始，加油！' })
     }
-    return highlights.slice(0, 3)
+    return highlights.slice(0, 4)
   },
 
   onShareToMoments() {
